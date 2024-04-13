@@ -1,0 +1,25 @@
+{
+  "name": "cloud-custody",
+  "version": "1.0.0",
+  "description": "KMS Cloudhsm development",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joulesler.com/cloud-custody.git"
+  },
+  "keywords": [
+    "bip",
+    "eip",
+    "signing",
+    "custody"
+  ],
+  "author": "joulesler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joulesler.com/cloud-custody/issues"
+  },
+  "homepage": "https://github.com/joulesler.com/cloud-custody#readme"
+}
