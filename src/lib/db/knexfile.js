@@ -1,5 +1,30 @@
 require('dotenv').config(); // Load environment variables
 
+const knex = require('knex')({
+  client: 'pg',
+  connection: {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: 'postgres',
+  },
+});
+
+const Logger = require('../logger/config');
+const logger = new Logger();
+
+async function createDatabase() {
+  try {
+    await knex.raw(`CREATE DATABASE IF NOT EXISTS${process.env.DB_DATABASE}`);
+    logger.info('Database created successfully');
+  } catch (error) {
+    logger.error('Error creating database:', error);
+  } finally {
+    knex.destroy();
+  }
+}
+
 module.exports = {
   development: {
     client: 'pg',
@@ -19,4 +44,7 @@ module.exports = {
       tableName: 'knex_migrations',
     },
   },
+  createDatabase,
 };
+
+createDatabase();

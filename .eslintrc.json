@@ -1,6 +1,8 @@
 {
     "extends": "airbnb-base",
     "rules": {
-      "no-console": "off"
+      "no-console": "off",
+      "linebreak-style": ["error", "unix"]// Enforce LF line endings, ignore CRLF
+
     }
   }
