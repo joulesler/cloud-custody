@@ -1,5 +1,5 @@
 const keyEnums = require('../../lib/enums/keys');
-const serviceMapping = require('../handlers/transaction-mapping');
+const serviceMapping = require('../handlers/service-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
 
 /**

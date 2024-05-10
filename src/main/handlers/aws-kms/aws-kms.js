@@ -108,19 +108,24 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const hdkey = HDKey.fromMasterSeed(masterSeedUtf8Array);
   const childKey = hdkey.derive(derivationPath);
 
+  const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 3).join('/')).publicExtendedKey;
+  console.log('accountXpub:', accountXpub)
+
   // TODO check that derivation is correct from the data to the mapping
   console.log('childKey:', childKey)
   console.log('childKey.publicKey:', childKey.publicKey)
-  const publicKey = Array.from(childKey.publicKey).map((byte) => byte.toString(16).padStart(2, '0')).join('');
 
-  console.log('publicKey:', publicKey);
-  const address = publicKeyToEthAddress(publicKey);
+  const { uncompressedPublicKey, address } = publicKeyToEthAddress(childKey.publicKey);
+
+  const uncompressedPublicKeyHex = Array.from(uncompressedPublicKey, byte => byte.toString(16).padStart(2, '0')).join('');
+
+  console.log('uncompressedPublicKey:', uncompressedPublicKeyHex)
   // 4. Save key to child key db
   const childKeyDb = await db(childTable.TABLE_NAME).insert(new childTable.ChildKeys({
     is_child: true,
     derivation_path: derivationPath,
     master_seed_id: masterSeedDb.id,
-    public_key: publicKey,
+    public_key: uncompressedPublicKeyHex,
     address,
   }));
 
@@ -128,7 +133,7 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
     throw new Error('Error saving child key to database');
   }
 
-  return { publicKey, address };
+  return { publicKey: uncompressedPublicKeyHex, address, accountXpub };
 }
 
 async function getMasterSeed(masterKeyLabel, xPubKey) {
