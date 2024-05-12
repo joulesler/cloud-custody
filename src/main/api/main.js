@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 8080;
 app.use(bodyParser.json());
 require('./key-service').generateChildKey(app);
 require('./key-service').generateKey(app);
-require('./chain-service')(app);
+require('./chain-service').getChainData(app);
+require('./chain-service').onboardChain(app);
 require('./transaction-service')(app);
 
 // Always run database migration prior to starting the application

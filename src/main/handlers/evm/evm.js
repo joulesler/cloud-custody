@@ -1,11 +1,14 @@
-const EthereumTx = require('ethereumjs-tx').Transaction;
+const ethereumJs = require('ethereumjs-tx');
 const { HDKey } = require('@scure/bip32');
 
 const serviceMapping = require('../service-mapping');
 const masterSeedInterface = require('../../../lib/db/tables/master-seed');
-const { rlp } = require('ethereumjs-util');
+const chainConfig = require('../../../lib/db/tables/chain-config')
+const { rlp, keccak } = require('ethereumjs-util');
+const { signHash } = require('../../../lib/crypto/secp256k1')
+const hexUtils = require('../../../lib/hex');
 
-async function signTransaction(keyLabel, transaction, derivationPath) {
+async function signTransaction(keyLabel, transaction, derivationPath, chainName) {
     const {
         gas,
         gasPrice,
@@ -15,12 +18,20 @@ async function signTransaction(keyLabel, transaction, derivationPath) {
         data,
     } = transaction;
 
+
     // validate the transaction
     if (!gas || !gasPrice || !nonce || !to || !value || !data) {
         throw new Error('Invalid transaction');
     }
 
-    try {
+try {
+        // get chain from db
+        const chainData = await chainConfig.getChainByName(chainName);
+
+        if (!Number.isInteger(chainData.public_chain_identifier)){
+            chainData.public_chain_identifier = Number(chainData.public_chain_identifier)
+        }
+
         // Get the master seed
         const masterSeedData = await masterSeedInterface.getKeyStoreTypeFromKeyLabel(keyLabel);
         console.log(masterSeedData)
@@ -37,6 +48,8 @@ async function signTransaction(keyLabel, transaction, derivationPath) {
         const hdkey = HDKey.fromMasterSeed(masterSeedUtf8Array);
         const childKey = hdkey.derive(derivationPath);
 
+        const EthereumTx = ethereumJs.Transaction
+
         const rlpTx = new EthereumTx({
             gas: gas,
             gasPrice: gasPrice,
@@ -46,13 +59,22 @@ async function signTransaction(keyLabel, transaction, derivationPath) {
             data: data,
         });
 
-        rlpTx.sign(childKey.privateKey);
+        const unsignedTxHash = rlpTx.hash(false);
         
+        const { r, s, v } = signHash(childKey.privateKey, unsignedTxHash, chainData.public_chain_identifier);
 
-        // const signature = childKey.sign(rlpTx.hash(false));
-        // const signatureHex = Array.from(signature).map((byte) => byte.toString(16).padStart(2, '0')).join('');
+        const signedTransaction = {
+            ... rlpTx.toJSON(true),
+            r,
+            s,
+            v
+        }
 
-        return { transaction: rlpTx.toJSON(), txForBroadcast: rlpTx.raw };
+        const serializedTransaction = rlp.encode(signedTransaction);
+        const signedTxHash = keccak(serializedTransaction);
+
+        return { transaction: signedTransaction, txForBroadcast: serializedTransaction, signedTxHash: hexUtils.byteToHexString(signedTxHash)};
+
     } catch (error) {
         throw error;
     }

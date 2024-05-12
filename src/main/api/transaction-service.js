@@ -1,6 +1,7 @@
 const keyEnums = require('../../lib/enums/keys');
 const serviceMapping = require('../handlers/transaction-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
+const chainConfig = require('../../lib/db/tables/chain-config')
 const chainEnum = require('../../lib/enums/chains');
 
 
@@ -16,21 +17,32 @@ function signTransaction(app) {
     app.post('/transaction/sign', async (req, res) => {
         try {
             // Get the chain id from the request
-            const { keyLabel, transactionType, derivationPath, transaction } = req.body;
+            const { masterKeyLabel, chainName, derivationPath, transaction } = req.body;
+
+            if (!chainName) {
+                throw new Error('Chain name is required')
+            }
+
+            const chainData = await chainConfig.getChainByName(chainName);
+
+            const transactionType = chainData.transaction_type;
 
             if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
-                throw new Error('Invalid transaction type');
+                throw new Error('Invalid transaction type from chain name');
             }
 
             if (!transaction) {
                 throw new Error('transaction is required');
             }
 
-            if (!keyLabel) {
-                throw new Error('keyLabel is required');
+            if (!masterKeyLabel) {
+                throw new Error('masterKeyLabel is required');
             }
 
-            const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType].signTransaction(keyLabel, transaction, derivationPath);
+
+            // Get the chainId from the database, using request transactionType
+            const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
+                .signTransaction(masterKeyLabel, transaction, derivationPath, chainName);
 
             // Send the response
             res.json({ success: true, ...signature });

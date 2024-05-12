@@ -1,5 +1,6 @@
 const secp256k1 = require('secp256k1');
 const ethUtil = require('ethereumjs-util');
+const hexUtils = require('../hex');
 
 function isValidSecp256k1PrivateKey(privateKey) {
   return secp256k1.privateKeyVerify(Buffer.from(privateKey, 'hex'));
@@ -38,7 +39,28 @@ function publicKeyToEthAddress(publicKey) {
   return { uncompressedPublicKey: publicKey, address: ethAddress };
 }
 
+
+/**
+ * @param {string} privateKey a hex encoded private key
+ * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
+ * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
+ */
+function signHash(privateKey, hash, chainId) {
+  const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
+  const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
+  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer);
+  const r = hexUtils.byteToHexString(signature.slice(0, 32), true);
+  const s = hexUtils.byteToHexString(signature.slice(32), true);
+
+  // Compute the parity value V
+  const v = hexUtils.integerToHexString(chainId * 2 + 27 + (recid % 2), true);
+
+  return { r, s, v };
+
+}
+
 module.exports = {
   isValidSecp256k1PrivateKey,
   publicKeyToEthAddress,
+  signHash
 };
