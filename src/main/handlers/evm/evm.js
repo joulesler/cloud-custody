@@ -52,7 +52,7 @@ async function signTransaction(keyLabel, transaction, derivationPath) {
         // const signature = childKey.sign(rlpTx.hash(false));
         // const signatureHex = Array.from(signature).map((byte) => byte.toString(16).padStart(2, '0')).join('');
 
-        return { transaction: rlpTx.toJSON()};
+        return { transaction: rlpTx.toJSON(), txForBroadcast: rlpTx.raw };
     } catch (error) {
         throw error;
     }
