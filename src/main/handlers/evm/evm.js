@@ -20,7 +20,7 @@ async function signTransaction(keyLabel, transaction, derivationPath, chainName)
 
 
     // validate the transaction
-    if (!gas || !gasPrice || !nonce || !to || !value || !data) {
+    if (!gas || !gasPrice || (!nonce && nonce !==0) || !to || !value ) {
         throw new Error('Invalid transaction');
     }
 
@@ -50,30 +50,60 @@ try {
 
         const EthereumTx = ethereumJs.Transaction
 
-        const rlpTx = new EthereumTx({
-            gas: gas,
-            gasPrice: gasPrice,
-            nonce: nonce,
-            to: to,
-            value: value,
-            data: data,
+        let normalisedData;
+
+        if (!data || data.length === 0){
+            normalisedData = '0x';
+        } else { 
+            normalisedData = data;
+        }
+        
+        const rlpTx = {
+            nonce:      hexUtils.integerToHexString(nonce),
+            gasPrice:   hexUtils.integerToHexString(gasPrice),
+            gas:        hexUtils.integerToHexString(gas),
+            to:         to,
+            value:      hexUtils.integerToHexString(value),
+            data:       normalisedData,
+            v:          hexUtils.integerToHexString(chainData.public_chain_identifier),
+            r:          0x0,
+            s:          0x0,
+        }
+
+        const unsignedTxElements = Object.values(rlpTx);
+        const hexConvertedUnsignedTxElements = unsignedTxElements.map(value =>  {
+            console.log(value)
+            const hexValue = Buffer.from(hexUtils.hexStringToByteArray(value));
+            return hexValue
         });
 
-        const unsignedTxHash = rlpTx.hash(false);
+        const serializedUnsignedTransaction = rlp.encode(hexConvertedUnsignedTxElements);
+        const unsignedTxHash = keccak(serializedUnsignedTransaction);
         
         const { r, s, v } = signHash(childKey.privateKey, unsignedTxHash, chainData.public_chain_identifier);
 
         const signedTransaction = {
-            ... rlpTx.toJSON(true),
+            ... rlpTx,
+            v,
             r,
             s,
-            v
         }
 
-        const serializedTransaction = rlp.encode(signedTransaction);
+        delete signedTransaction.chainId;
+
+        const txElements = Object.values(signedTransaction);
+        const hexConvertedTxElements = txElements.map(value =>  {
+            const hexValue = Buffer.from(hexUtils.hexStringToByteArray(value));
+            return hexValue
+        });
+
+        const serializedTransaction = rlp.encode(hexConvertedTxElements);
         const signedTxHash = keccak(serializedTransaction);
 
-        return { transaction: signedTransaction, txForBroadcast: serializedTransaction, signedTxHash: hexUtils.byteToHexString(signedTxHash)};
+        return { transaction: signedTransaction, 
+            txForBroadcast: hexUtils.byteToHexString(rlp.encode(hexConvertedTxElements), true),
+            signedTxHash: hexUtils.byteToHexString(signedTxHash, true)
+        };
 
     } catch (error) {
         throw error;

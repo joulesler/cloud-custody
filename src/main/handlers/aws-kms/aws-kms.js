@@ -85,7 +85,7 @@ async function generateKey(isMasterKey, chainId) {
 
 /**
  *
- * @param {*} derivationPath eg. m/44'/60'/0'/0/0
+ * @param {*} derivationPath eg. m/44'/60'/0'/0/0 (44 is BIP44 hardended, 60 for Ethereum, 0 for account, 0 for address, 0 for first address, apostrophe is hardened)
  * @param {*} masterKeyLabel e.g. 6eafda87-3e7c-49b2-b3e4-38f9e9aadfff
  * @param {*} xPubKey e.g. xpub661MyMwAqRbcGiD1SpeM5JygNck8sipZjD3qKra1Koa3LUZobseNAiFSiYKd4yfzpv3voGAMPZ5qRKbDii2LPMMdq95YemF1sRgYqTkGNL5
  *

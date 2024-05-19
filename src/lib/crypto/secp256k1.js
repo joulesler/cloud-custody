@@ -45,7 +45,7 @@ function publicKeyToEthAddress(publicKey) {
  * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
  */
-function signHash(privateKey, hash, chainId) {
+function signHash(privateKey, hash, chainId = false) {
   const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
   const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
   const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer);
@@ -53,7 +53,23 @@ function signHash(privateKey, hash, chainId) {
   const s = hexUtils.byteToHexString(signature.slice(32), true);
 
   // Compute the parity value V
-  const v = hexUtils.integerToHexString(chainId * 2 + 27 + (recid % 2), true);
+  let v;
+  if (!chainId) {
+    v = recid + 27;
+  } else {
+    v = recid + 27 + (chainId * 2 + 8); // EIP-155
+  }
+
+  // Recover the public key from the signature
+  const publicKey = secp256k1.ecdsaRecover(signature, recid, hashBuffer, false);
+
+  // Convert the public key to an Ethereum address
+  const { address } = publicKeyToEthAddress(publicKey);
+  console.log('verifying address:', address);
+
+  // verify the signature
+  const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
+  console.log('signature valid:', valid);
 
   return { r, s, v };
 
