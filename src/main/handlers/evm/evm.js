@@ -1,4 +1,3 @@
-const ethereumJs = require('ethereumjs-tx');
 const { HDKey } = require('@scure/bip32');
 
 const serviceMapping = require('../service-mapping');
@@ -48,8 +47,6 @@ try {
         const hdkey = HDKey.fromMasterSeed(masterSeedUtf8Array);
         const childKey = hdkey.derive(derivationPath);
 
-        const EthereumTx = ethereumJs.Transaction
-
         let normalisedData;
 
         if (!data || data.length === 0){
@@ -66,8 +63,8 @@ try {
             value:      hexUtils.integerToHexString(value),
             data:       normalisedData,
             v:          hexUtils.integerToHexString(chainData.public_chain_identifier),
-            r:          0x0,
-            s:          0x0,
+            r:          hexUtils.integerToHexString(0),
+            s:          hexUtils.integerToHexString(0),
         }
 
         const unsignedTxElements = Object.values(rlpTx);
@@ -80,7 +77,15 @@ try {
         const serializedUnsignedTransaction = rlp.encode(hexConvertedUnsignedTxElements);
         const unsignedTxHash = keccak(serializedUnsignedTransaction);
         
-        const { r, s, v } = signHash(childKey.privateKey, unsignedTxHash, chainData.public_chain_identifier);
+        const ephermeral = await serviceMapping.KEY_SERVICES[keyStoreType].generateNonce();
+        const ephermeralUint8Array = hexUtils.hexStringToByteArray(ephermeral)
+
+        const { r, s, v } = signHash(
+            childKey.privateKey, 
+            unsignedTxHash, 
+            chainData.public_chain_identifier,
+            { noncefn : () => ephermeralUint8Array }
+        );
 
         const signedTransaction = {
             ... rlpTx,

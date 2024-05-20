@@ -137,32 +137,43 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
 }
 
 async function getMasterSeed(masterKeyLabel, xPubKey) {
-    try {
-        let masterSeedDb;
-        if (masterKeyLabel) {
-          masterSeedDb = await db(masterTable.TABLE_NAME).where({ encrypting_key_label: masterKeyLabel }).first();
-        } else {
-          masterSeedDb = await db(masterTable.TABLE_NAME).where({ x_pub_key: xPubKey }).first();
-        }
+  try {
+      let masterSeedDb;
+      if (masterKeyLabel) {
+        masterSeedDb = await db(masterTable.TABLE_NAME).where({ encrypting_key_label: masterKeyLabel }).first();
+      } else {
+        masterSeedDb = await db(masterTable.TABLE_NAME).where({ x_pub_key: xPubKey }).first();
+      }
+    
+      if (!masterSeedDb) {
+        throw new Error('Master key not found');
+      }
+    
+      // 2. Decrypt master seed
+      const encryptedSeed = Buffer.from(masterSeedDb.encrypted_seed, 'hex');
+      const decryptedSeed = await kms.decryptData(encryptedSeed, masterSeedDb.encrypting_key_label);
+      const masterSeed = decryptedSeed.toString('hex');
       
-        if (!masterSeedDb) {
-          throw new Error('Master key not found');
-        }
-      
-        // 2. Decrypt master seed
-        const encryptedSeed = Buffer.from(masterSeedDb.encrypted_seed, 'hex');
-        const decryptedSeed = await kms.decryptData(encryptedSeed, masterSeedDb.encrypting_key_label);
-        const masterSeed = decryptedSeed.toString('hex');
-        
-        return { masterSeed, masterSeedDb };
-    } catch (err) {
-      console.error('Error signing data:', err);
-      throw err;
-    }
+      return { masterSeed, masterSeedDb };
+  } catch (err) {
+    console.error('Error signing data:', err);
+    throw err;
   }
+}
+
+/**
+ * Obtain the 32 byte/ 256 bit random nonce (k - ephermeral key) 
+ * Used in the p = kG applied to the ECDSA signature, 
+ * Where the resultant r value is broadcast
+ */
+async function generateNonce() {
+  const nonce = await kms.generateRandomSeed(32);
+  return nonce;
+}
 
 module.exports = {
   generateKey,
   deriveChildKey,
   getMasterSeed,
+  generateNonce
 };

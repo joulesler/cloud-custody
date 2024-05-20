@@ -9,7 +9,10 @@ const awsKmsKeyTypes = {
   SYMMETRIC_DEFAULT: 'SYMMETRIC_DEFAULT',
 };
 
-// Function to get a singleton instance of the AWS KMS client
+/**
+ * Function to get a singleton instance of the AWS KMS client
+ * @returns {AWS.KMS}
+ */
 function kmsClient() {
   // Check if the instance already exists
   if (!kmsInstance) {
@@ -29,7 +32,7 @@ function getTags(keyName) {
 }
 
 /**
- *
+ * Function to generate a non-extractable data key
  * @param {AWS.KMS.DataKeySpec} types
  * @returns
  */
@@ -59,7 +62,7 @@ async function generateNonExtractableDataKey(type) {
 }
 
 /**
- *
+ * Function to create an encryption key
  * @param {*} keyName
  * @returns {AWS.KMS.KeyMetadata}
  */
@@ -144,6 +147,12 @@ async function encryptData(dataToEncrypt, encryptionKeyId) {
   }
 }
 
+/**
+ * 
+ * @param {*} dataToDecrypt 
+ * @param {*} encryptionKeyId 
+ * @returns 
+ */
 async function decryptData(dataToDecrypt, encryptionKeyId) {
   const kms = kmsClient();
   try {

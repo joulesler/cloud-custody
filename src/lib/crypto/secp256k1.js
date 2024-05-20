@@ -34,7 +34,6 @@ function publicKeyToEthAddress(publicKey) {
   // Ensure the address starts with '0x'
   const ethAddress = address.startsWith('0x') ? address : `0x${address}`;
   
-  console.log('publicKey:', publicKey);
   // return the uncompressed public key and the Ethereum address
   return { uncompressedPublicKey: publicKey, address: ethAddress };
 }
@@ -45,10 +44,10 @@ function publicKeyToEthAddress(publicKey) {
  * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
  */
-function signHash(privateKey, hash, chainId = false) {
+function signHash(privateKey, hash, chainId = false, options = {}) {
   const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
   const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
-  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer);
+  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer, options);
   const r = hexUtils.byteToHexString(signature.slice(0, 32), true);
   const s = hexUtils.byteToHexString(signature.slice(32), true);
 
@@ -71,7 +70,7 @@ function signHash(privateKey, hash, chainId = false) {
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
   console.log('signature valid:', valid);
 
-  return { r, s, v };
+  return { r, s, v: hexUtils.integerToHexString(v) };
 
 }
 
