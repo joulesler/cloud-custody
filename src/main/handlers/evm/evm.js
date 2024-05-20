@@ -94,8 +94,6 @@ try {
             s,
         }
 
-        delete signedTransaction.chainId;
-
         const txElements = Object.values(signedTransaction);
         const hexConvertedTxElements = txElements.map(value =>  {
             const hexValue = Buffer.from(hexUtils.hexStringToByteArray(value));
