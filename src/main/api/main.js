@@ -18,6 +18,7 @@ require('./key-service').generateKey(app);
 require('./chain-service').getChainData(app);
 require('./chain-service').onboardChain(app);
 require('./transaction-service')(app);
+require('./gnosis-service')(app);
 
 // Always run database migration prior to starting the application
 migrate().then(() => {
