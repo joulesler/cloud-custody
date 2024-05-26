@@ -54,4 +54,47 @@ function signTransaction(app) {
     });
 }
 
-module.exports = signTransaction;
+function signHash (app) {
+    app.post('/transaction/signHash', async (req, res) => {
+        try {
+            // Get the chain id from the request
+            const { masterKeyLabel, chainName, derivationPath, hash } = req.body;
+
+            if (!chainName) {
+                throw new Error('Chain name is required')
+            }
+
+            const chainData = await chainConfig.getChainByName(chainName);
+
+            const transactionType = chainData.transaction_type;
+
+            if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
+                throw new Error('Invalid transaction type from chain name');
+            }
+
+            if (!hash) {
+                throw new Error('hash is required');
+            }
+
+            if (!masterKeyLabel) {
+                throw new Error('masterKeyLabel is required');
+            }
+
+            // Get the chainId from the database, using request transactionType
+            const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
+                .signHash(masterKeyLabel, hash, derivationPath, chainName);
+
+            // Send the response
+            res.json({ success: true, signature });
+        } catch (error) {
+            // Send the error response
+            console.log(error);
+            res.json({ success: false, error: error.message });
+        }
+    });
+}
+
+module.exports = {
+    signTransaction,
+    signHash,
+};

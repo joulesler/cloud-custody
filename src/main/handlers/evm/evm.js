@@ -4,7 +4,7 @@ const serviceMapping = require('../service-mapping');
 const masterSeedInterface = require('../../../lib/db/tables/master-seed');
 const chainConfig = require('../../../lib/db/tables/chain-config')
 const { rlp, keccak } = require('ethereumjs-util');
-const { signHash } = require('../../../lib/crypto/secp256k1')
+const { signHash, gnosisSignHash, publicKeyToEthAddress } = require('../../../lib/crypto/secp256k1')
 const hexUtils = require('../../../lib/hex');
 
 async function signTransaction(keyLabel, transaction, derivationPath, chainName) {
@@ -113,6 +113,65 @@ try {
     }
 }
 
+/**
+ * 
+ * @param {*} keyLabel 
+ * @param {*} chainName 
+ * @param {*} derivationPath 
+ * @param {*} hash 
+ * @param {*} isGnosis 
+ * @returns {{r: string, s: string, v: string, rawSignature: Uint8Array, signedHash: string, address: string}}
+ */
+async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = false) {
+    try {
+        let chainData = null;
+
+        // get chain from db if present
+        if (chainName) {
+            chainData = await chainConfig.getChainByName(chainName);
+        }
+
+        if (chainData.public_chain_identifier && !Number.isInteger(chainData.public_chain_identifier)){
+            chainData.public_chain_identifier = Number(chainData.public_chain_identifier)
+        }
+
+        // Get the master seed
+        const masterSeedData = await masterSeedInterface.getKeyStoreTypeFromKeyLabel(keyLabel);
+
+        if (!masterSeedData
+            || !masterSeedData.key_store_type) {
+            throw new Error('Invalid key label');
+        }
+
+        const keyStoreType = masterSeedData.key_store_type;
+
+        const { masterSeed } = await serviceMapping.KEY_SERVICES[keyStoreType].getMasterSeed(keyLabel);
+
+        const masterSeedUtf8Array = Buffer.from(masterSeed, 'hex');
+        const hdkey = HDKey.fromMasterSeed(masterSeedUtf8Array);
+        const childKey = hdkey.derive(derivationPath);
+
+        const ephermeral = await serviceMapping.KEY_SERVICES[keyStoreType].generateNonce();
+        const ephermeralUint8Array = hexUtils.hexStringToByteArray(ephermeral)
+
+        const signFn = isGnosis ? gnosisSignHash : signHash;
+        const { r, s, v, rawSignature } = signFn(
+            childKey.privateKey, 
+            hash, 
+            chainData.public_chain_identifier?? false,
+            { noncefn : () => ephermeralUint8Array }
+        );
+
+        const { address } = publicKeyToEthAddress(childKey.publicKey);
+
+        return { r, s, v, signedHash: hash, rawSignature, address};
+
+    } catch (error) {
+        throw error;
+    }
+}
+
 module.exports = {
     signTransaction,
+    signHash,
 }

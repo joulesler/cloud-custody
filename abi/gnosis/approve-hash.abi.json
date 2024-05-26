@@ -1,0 +1,16 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "hashToApprove",
+                "type": "bytes32"
+            }
+        ],
+        "name": "approveHash",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+]   

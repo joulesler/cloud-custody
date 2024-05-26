@@ -1,6 +1,11 @@
 const SafeProtocol = require('@safe-global/protocol-kit')
-const safeAbi = require('../../../../abi/gnosis/transaction.abi.json')
-const Web3 = require('web3')
+const safeAbi = require('../../../../abi/gnosis/exec-transaction.abi.json')
+const Web3 = require('web3');
+const { default: EthSafeTransaction } = require('@safe-global/protocol-kit/dist/src/utils/transactions/SafeTransaction');
+const { TRANSACTION_SERVICES } = require('../transaction-mapping');
+const { TRANSACTION_TYPE } = require('../../../lib/enums/chains');
+const web3 = new Web3();
+const hexUtils = require('../../../lib/hex');
 
 /**
  * Solidity Transaction Object
@@ -16,9 +21,6 @@ const Web3 = require('web3')
         address payable refundReceiver,
         bytes memory signatures
  */
-
-
-const web3 = new Web3();
 
 function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken = '0x', refundReceiver, signatures) {
     // validations for input
@@ -45,4 +47,34 @@ function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, g
     return web3.eth.abi.encodeFunctionCall(safeAbi, [to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures])
 }
 
-export default encodeExecTransaction;
+/**
+ * 
+ * @param {EthSafeTransaction} ethSafeTransaction
+ * @param {SafeProtocol.EthSafeSignature} ethSignSignature 
+ */
+function addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature ) {
+    // add signature to the map of signatures
+    if (!ethSafeTransaction.signatures) {
+        ethSafeTransaction.signatures = new Map()
+    }
+    ethSafeTransaction.signatures.set(ethSignSignature.signer, ethSignSignature)
+    return ethSafeTransaction;
+}
+
+/**
+ * @param {String} hash - The hash to be approved.
+ * @param {String} masterKeyLabel
+ * @param {derivationPath} derivationPath
+ * @return {Map<String, SafeProtocol.EthSafeSignature>} - The signature of the hash.
+ */
+function approveHash(hash, keyLabel, derivationPath){
+    const { rawSignature, address } = TRANSACTION_SERVICES[TRANSACTION_TYPE.EVM].signHash(keyLabel, null, derivationPath, hash, true);
+    const signature = new SafeProtocol.EthSafeSignature(address, hexUtils.byteToHexString(rawSignature));
+    return new Map().set(address, signature);
+}
+
+module.exports = {
+    encodeExecTransaction,
+    addSignatureToSafeTransaction,
+    approveHash,
+};

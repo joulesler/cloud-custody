@@ -8,6 +8,7 @@ function isValidSecp256k1PrivateKey(privateKey) {
 
 /**
  * @param {string} publicKey a byte array encoded public key
+ * @returns {{uncompressedPublicKey: string, address: string}} An object with the uncompressed public key and the address
  */
 function publicKeyToEthAddress(publicKey) {
   console.log('publicKey:', publicKey);
@@ -43,11 +44,13 @@ function publicKeyToEthAddress(publicKey) {
  * @param {string} privateKey a hex encoded private key
  * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
+ * @param {function} options.noncefn a function that returns a nonce
+ * @returns {r: string, s: string, v: string, rawSignature: Uint8Array}
  */
 function signHash(privateKey, hash, chainId = false, options = {}) {
   const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
   const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
-  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer, options);
+  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer, { noncefn: options.noncefn });
   const r = hexUtils.byteToHexString(signature.slice(0, 32), true);
   const s = hexUtils.byteToHexString(signature.slice(32), true);
 
@@ -70,12 +73,47 @@ function signHash(privateKey, hash, chainId = false, options = {}) {
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
   console.log('signature valid:', valid);
 
-  return { r, s, v: hexUtils.integerToHexString(v) };
+  return { r, s, v: hexUtils.integerToHexString(v), rawSignature: signature };
+
+}
+
+/**
+ * 
+ * @param {string} privateKey a hex encoded private key
+ * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
+ * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
+ * @param {number} chainId the chain id to use for signing
+ * @param {function} options.noncefn a function that returns a nonce
+ * @returns {r: string, s: string, v: string, rawSignature: Uint8Array}
+ */
+function gnosisSignHash(privateKey, hash, chainId = false, options = {}) {
+  const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
+  const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
+  const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer, { noncefn: options.noncefn });
+  const r = hexUtils.byteToHexString(signature.slice(0, 32), true);
+  const s = hexUtils.byteToHexString(signature.slice(32), true);
+
+  // Compute the parity value V
+  const v = recid + 31;
+
+  // Recover the public key from the signature
+  const publicKey = secp256k1.ecdsaRecover(signature, recid, hashBuffer, false);
+
+  // Convert the public key to an Ethereum address
+  const { address } = publicKeyToEthAddress(publicKey);
+  console.log('verifying address:', address);
+
+  // verify the signature
+  const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
+  console.log('signature valid:', valid);
+
+  return { r, s, v: hexUtils.integerToHexString(v), rawSignature: signature};
 
 }
 
 module.exports = {
   isValidSecp256k1PrivateKey,
   publicKeyToEthAddress,
-  signHash
+  signHash,
+  gnosisSignHash,
 };
