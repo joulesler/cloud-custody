@@ -17,8 +17,11 @@ require('./key-service').generateChildKey(app);
 require('./key-service').generateKey(app);
 require('./chain-service').getChainData(app);
 require('./chain-service').onboardChain(app);
-require('./transaction-service')(app);
-require('./gnosis-service')(app);
+require('./transaction-service').signHash(app);
+require('./transaction-service').signTransaction(app);
+require('./gnosis-service').addSignature(app);
+require('./gnosis-service').gnosisData(app);
+require('./gnosis-service').approveHash(app);
 
 // Always run database migration prior to starting the application
 migrate().then(() => {

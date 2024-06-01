@@ -4,7 +4,7 @@ const serviceMapping = require('../service-mapping');
 const masterSeedInterface = require('../../../lib/db/tables/master-seed');
 const chainConfig = require('../../../lib/db/tables/chain-config')
 const { rlp, keccak } = require('ethereumjs-util');
-const { signHash, gnosisSignHash, publicKeyToEthAddress } = require('../../../lib/crypto/secp256k1')
+const { signHash: regularSignHash, gnosisSignHash, publicKeyToEthAddress } = require('../../../lib/crypto/secp256k1')
 const hexUtils = require('../../../lib/hex');
 
 async function signTransaction(keyLabel, transaction, derivationPath, chainName) {
@@ -80,7 +80,7 @@ try {
         const ephermeral = await serviceMapping.KEY_SERVICES[keyStoreType].generateNonce();
         const ephermeralUint8Array = hexUtils.hexStringToByteArray(ephermeral)
 
-        const { r, s, v } = signHash(
+        const { r, s, v } = regularSignHash(
             childKey.privateKey, 
             unsignedTxHash, 
             chainData.public_chain_identifier,
@@ -154,7 +154,7 @@ async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = fa
         const ephermeral = await serviceMapping.KEY_SERVICES[keyStoreType].generateNonce();
         const ephermeralUint8Array = hexUtils.hexStringToByteArray(ephermeral)
 
-        const signFn = isGnosis ? gnosisSignHash : signHash;
+        const signFn = isGnosis ? gnosisSignHash : regularSignHash;
         const { r, s, v, rawSignature } = signFn(
             childKey.privateKey, 
             hash, 
