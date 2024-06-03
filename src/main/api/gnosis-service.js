@@ -20,20 +20,14 @@ function gnosisData(app) {
                 throw new ValidationError('value is required')
             }
             // enum make sure its of the two values, DelegateCall or Call
-            if (!operation || operation !== SafeProtocol.Operations.Call && operation !== SafeProtocol.Operations.DelegateCall) {
+            if (('number' !== typeof operation && !operation ) || (operation !== safe.Operations.Call && operation !== safe.Operations.DelegateCall)) {
                 throw new ValidationError('operation must be either DelegateCall or Call')
-            }
-            if (!safeTxGas) {
-                throw new ValidationError('safeTxGas is required')
-            }
-            if (!baseGas) {
-                throw new ValidationError('baseGas is required')
             }
             if (!gasPrice) {
                 throw new ValidationError('gasPrice is required')
             }
 
-            const abiEncodeDdata = safe.encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
+            const abiEncodeDdata = await safe.encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
 
             res.json({ success: true, encodedData: abiEncodeDdata });
         } catch (error) {
@@ -61,7 +55,7 @@ function addSignature(app) {
                 throw new ValidationError('ethSignSignature is required')
             }
 
-            const safeTransaction = safe.addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature);
+            const safeTransaction = await safe.addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature);
 
             res.json({ success: true, safeTransaction });
         } catch (error) {
@@ -81,12 +75,16 @@ function approveHash(app) {
                 throw new ValidationError('safeTxHash is required')
             }
 
-            const safeTransaction = safe.approveHash(safeTxHash, masterKeyLabel, derivationPath);
-            res.json({ success: true, safeTransaction });
+            const safeSignature = await safe.approveHash(safeTxHash, masterKeyLabel, derivationPath);
+           res.json({ success: true, ...safeSignature });
         } catch (error) {
             // Send the error response
             console.log(error);
-            res.json({ success: false, error: error.message });
+            let statusCode = 500;
+            if (error.status) {
+                statusCode = error.status;
+            }
+            res.status(statusCode).json({ success: false, error: error.message });
         }
     });
 }

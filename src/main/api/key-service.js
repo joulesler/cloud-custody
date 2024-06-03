@@ -1,6 +1,7 @@
 const keyEnums = require('../../lib/enums/keys');
 const serviceMapping = require('../handlers/service-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
+const ValidationError = require('../../lib/errors/validation-error');
 
 /**
  * <h> Generate a master key pair for a chain </h>
@@ -53,15 +54,15 @@ function generateChildKey(app) {
       const { derivationPath, masterKeyLabel, xPubKey } = req.body;
 
       if (masterKeyLabel && xPubKey) {
-        throw new Error('Only one of masterKeyLabel or xPubKey should be provided');
+        throw new ValidationError('Only one of masterKeyLabel or xPubKey should be provided');
       }
 
       if (!derivationPath) {
-        throw new Error('derivationPath is required');
+        throw new ValidationError('derivationPath is required');
       }
 
       if (!masterKeyLabel && !xPubKey) {
-        throw new Error('Either masterKeyLabel or xPubKey is required');
+        throw new ValidationError('Either masterKeyLabel or xPubKey is required');
       }
 
       let keyData;
@@ -72,7 +73,7 @@ function generateChildKey(app) {
       const kmsType = keyData.key_store_type;
 
       if (!kmsType) {
-        throw new Error('kmsType not found');
+        throw new ValidationError('kmsType not found');
       }
       // Generate the master key pair
       const keyPair = await serviceMapping.KEY_SERVICES[kmsType].deriveChildKey(derivationPath, { masterKeyLabel, xPubKey });

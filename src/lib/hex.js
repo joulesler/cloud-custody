@@ -1,3 +1,5 @@
+const { BN } = require("ethereumjs-util");
+const ValidationError = require("./errors/validation-error");
 
 /**
  * 
@@ -21,6 +23,12 @@ exports.removeHexPrefix = (input) =>  {
  * @returns 
  */
 exports.byteToHexString = (byteArray, prefix) =>  {
+  if (!byteArray || !Array.isArray(byteArray)) {
+    if (typeof byteArray === 'string' && byteArray.startsWith('0x')) {
+      // noop if already a hex string
+      return byteArray;
+    }
+  }
     const hexString =  Array.from(byteArray, byte => byte.toString(16).padStart(2, '0')).join('');
     if (prefix) {
         return '0x' + hexString;
@@ -64,4 +72,27 @@ exports.hexStringToByteArray = (hexString) => {
     return new Uint8Array();
   }
   return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+}
+
+exports.numericalToBigInt = (numerical) => {
+  if (typeof numerical === 'string') {
+    if (numerical.startsWith('0x')){
+      if (!isValidHex(numerical)) {
+        throw new ValidationError('Invalid hexadecimal string');
+      }
+      return BigInt(numerical);
+    } else {
+      // defaults to base 10
+      return BigInt(numerical);
+    }
+  }
+  else if (typeof numerical === 'bigint' || typeof numerical === 'number') {
+    return BigInt(numerical);
+  }
+}
+
+exports.isValidHex = isValidHex;
+
+function isValidHex(hex) {
+  return /^0x[0-9a-fA-F]*$/.test(hex);
 }

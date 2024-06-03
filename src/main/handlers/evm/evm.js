@@ -6,6 +6,9 @@ const chainConfig = require('../../../lib/db/tables/chain-config')
 const { rlp, keccak } = require('ethereumjs-util');
 const { signHash: regularSignHash, gnosisSignHash, publicKeyToEthAddress } = require('../../../lib/crypto/secp256k1')
 const hexUtils = require('../../../lib/hex');
+const ValidationError = require('../../../lib/errors/validation-error');
+const CustodyError = require('../../../lib/errors/custody-error');
+const ProcessingError = require('../../../lib/errors/processing-error');
 
 async function signTransaction(keyLabel, transaction, derivationPath, chainName) {
     const {
@@ -19,8 +22,8 @@ async function signTransaction(keyLabel, transaction, derivationPath, chainName)
 
 
     // validate the transaction
-    if (!gas || !gasPrice || (!nonce && nonce !==0) || !to || !value ) {
-        throw new Error('Invalid transaction');
+    if (!gas || !gasPrice || (!nonce && nonce !==0) || !to || (!value && value !==0)) {
+        throw new ValidationError('Invalid transaction');
     }
 
 try {
@@ -36,7 +39,7 @@ try {
         console.log(masterSeedData)
         if (!masterSeedData
             || !masterSeedData.key_store_type) {
-            throw new Error('Invalid key label');
+            throw new ValidationError('Invalid key label');
         }
 
         const keyStoreType = masterSeedData.key_store_type;
@@ -109,7 +112,10 @@ try {
         };
 
     } catch (error) {
-        throw error;
+        if (error instanceof CustodyError){
+            throw error;
+        }
+        throw new ProcessingError('Error signing data: ' + error.message);
     }
 }
 
@@ -120,7 +126,7 @@ try {
  * @param {*} derivationPath 
  * @param {*} hash 
  * @param {*} isGnosis 
- * @returns {{r: string, s: string, v: string, rawSignature: Uint8Array, signedHash: string, address: string}}
+ * @returns {{r: String, s: String, v: String, rawSignature: String, signedHash: String, address: String}}
  */
 async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = false) {
     try {
@@ -131,7 +137,7 @@ async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = fa
             chainData = await chainConfig.getChainByName(chainName);
         }
 
-        if (chainData.public_chain_identifier && !Number.isInteger(chainData.public_chain_identifier)){
+        if (chainData?.public_chain_identifier && !Number.isInteger(chainData.public_chain_identifier)){
             chainData.public_chain_identifier = Number(chainData.public_chain_identifier)
         }
 
@@ -140,7 +146,7 @@ async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = fa
 
         if (!masterSeedData
             || !masterSeedData.key_store_type) {
-            throw new Error('Invalid key label');
+            throw new ValidationError('Invalid key label');
         }
 
         const keyStoreType = masterSeedData.key_store_type;
@@ -155,19 +161,22 @@ async function signHash(keyLabel, chainName, derivationPath, hash, isGnosis = fa
         const ephermeralUint8Array = hexUtils.hexStringToByteArray(ephermeral)
 
         const signFn = isGnosis ? gnosisSignHash : regularSignHash;
-        const { r, s, v, rawSignature } = signFn(
+        const { r, s, v, rawSignature: rawSignatureUtfArr } = signFn(
             childKey.privateKey, 
             hash, 
-            chainData.public_chain_identifier?? false,
+            chainData?.public_chain_identifier?? false,
             { noncefn : () => ephermeralUint8Array }
         );
 
         const { address } = publicKeyToEthAddress(childKey.publicKey);
 
-        return { r, s, v, signedHash: hash, rawSignature, address};
+        return { r, s, v, signedHash: hash, rawSignature: hexUtils.byteToHexString(rawSignatureUtfArr, true), address }
 
     } catch (error) {
-        throw error;
+        if (error instanceof CustodyError){
+            throw error;
+        }
+        throw new ProcessingError('Error signing data: ' + error.message);
     }
 }
 

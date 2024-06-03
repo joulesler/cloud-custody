@@ -4,8 +4,15 @@ const Web3 = require('web3');
 const { default: EthSafeTransaction } = require('@safe-global/protocol-kit/dist/src/utils/transactions/SafeTransaction');
 const { TRANSACTION_SERVICES } = require('../transaction-mapping');
 const { TRANSACTION_TYPE } = require('../../../lib/enums/chains');
-const web3 = new Web3();
+const web3 = new Web3.Web3();
 const hexUtils = require('../../../lib/hex');
+const ValidationError = require('../../../lib/errors/validation-error');
+const { BN } = require('ethereumjs-util');
+
+const Operations = {
+    Call: 0,
+    DelegateCall: 1
+};
 
 /**
  * Solidity Transaction Object
@@ -22,29 +29,47 @@ const hexUtils = require('../../../lib/hex');
         bytes memory signatures
  */
 
-function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken = '0x', refundReceiver, signatures) {
+async function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken = '0x', refundReceiver, signatures) {
     // validations for input
+    let estimateSafeTxGas = false;
     if (!to) {
-        throw new Error('to address is required')
+        throw new ValidationError('to address is required')
     }
     if (!value) {
-        throw new Error('value is required')
+        throw new ValidationError('value is required')
     }
     // enum make sure its of the two values, DelegateCall or Call
-    if (!operation || operation !== SafeProtocol.Operations.Call && operation !== SafeProtocol.Operations.DelegateCall) {
-        throw new Error('operation must be either DelegateCall or Call')
+    if (('number' !== typeof operation && !operation ) || (operation !== Operations.Call && operation !== Operations.DelegateCall)) {        
+        throw new ValidationError('operation must be either DelegateCall or Call')
     }
     if (!safeTxGas) {
-        throw new Error('safeTxGas is required')
+        safeTxGas = 0;
+        estimateSafeTxGas = true;
     }
     if (!baseGas) {
-        throw new Error('baseGas is required')
+        // Assume a normal ETH EOA transfer, cost of transfer + smart contract execution
+        // baseGas = 35000;
+        baseGas = 0;
     }
     if (!gasPrice) {
-        throw new Error('gasPrice is required')
+        throw new ValidationError('gasPrice is required')
     }
 
-    return web3.eth.abi.encodeFunctionCall(safeAbi, [to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures])
+    const safeTxGasBN = hexUtils.numericalToBigInt(safeTxGas);
+    const baseGasBN = hexUtils.numericalToBigInt(baseGas);
+    const gasPriceBN = hexUtils.numericalToBigInt(gasPrice);
+    const valueBN = hexUtils.numericalToBigInt(value);
+
+    // Encode packed the signatures map into array
+    const concatSignatures = Object.values(signatures).reduce((signatureAcc, signature) => {
+        return signatureAcc + hexUtils.removeHexPrefix(signature.data);
+    }, '0x');
+    
+    // Should not be needed
+    // const dataBytes = hexUtils.hexStringToByteArray(data);
+    // const signatureBytes = hexUtils.hexStringToByteArray(concatSignatures);
+    
+    return web3.eth.abi.encodeFunctionCall(safeAbi, [to, valueBN, data, operation, safeTxGasBN, baseGasBN, gasPriceBN, gasToken, refundReceiver, concatSignatures]);
 }
 
 /**
@@ -52,12 +77,13 @@ function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, g
  * @param {EthSafeTransaction} ethSafeTransaction
  * @param {SafeProtocol.EthSafeSignature} ethSignSignature 
  */
-function addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature ) {
+async function addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature ) {
     // add signature to the map of signatures
     if (!ethSafeTransaction.signatures) {
-        ethSafeTransaction.signatures = new Map()
+        ethSafeTransaction.signatures = {}
     }
-    ethSafeTransaction.signatures.set(ethSignSignature.signer, ethSignSignature)
+    // convert the object to map and set the signature
+    ethSafeTransaction.signatures[ethSignSignature.signer] = ethSignSignature
     return ethSafeTransaction;
 }
 
@@ -67,14 +93,19 @@ function addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature ) {
  * @param {derivationPath} derivationPath
  * @return {Map<String, SafeProtocol.EthSafeSignature>} - The signature of the hash.
  */
-function approveHash(hash, keyLabel, derivationPath){
-    const { rawSignature, address } = TRANSACTION_SERVICES[TRANSACTION_TYPE.EVM].signHash(keyLabel, null, derivationPath, hash, true);
-    const signature = new SafeProtocol.EthSafeSignature(address, hexUtils.byteToHexString(rawSignature));
-    return new Map().set(address, signature);
+async function approveHash(hash, keyLabel, derivationPath){
+    const { v, rawSignature, address } = await TRANSACTION_SERVICES[TRANSACTION_TYPE.EVM].signHash(keyLabel, null, derivationPath, hash, true); 
+
+    // append the v to the signature
+    const rawSignatureV = rawSignature + hexUtils.removeHexPrefix(v);
+
+    const signature = await new SafeProtocol.EthSafeSignature(address, rawSignatureV, false);
+    return {address, signature};
 }
 
 module.exports = {
     encodeExecTransaction,
     addSignatureToSafeTransaction,
     approveHash,
+    Operations,
 };

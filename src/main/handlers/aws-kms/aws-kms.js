@@ -11,6 +11,9 @@ const chainConfig = require('../../../lib/db/tables/chain-config');
 const { publicKeyToEthAddress } = require('../../../lib/crypto/secp256k1');
 
 const { SUPPORTED_KMS } = require('../../../lib/enums/keys');
+const ProcessingError = require('../../../lib/errors/processing-error');
+const ValidationError = require('../../../lib/errors/validation-error');
+const CustodyError = require('../../../lib/errors/custody-error');
 
 /**
  *
@@ -28,12 +31,12 @@ async function generateKey(isMasterKey, chainId) {
   const keyName = UUID.v4();
   try {
     if (!chainId) {
-      throw new Error('Chain id is required');
+      throw new ValidationError('Chain id is required');
     }
 
     const chain = await chainConfig.getChainByPubId(chainId);
     if (!chain || !chain.seed_length || !chain.seed_length > 0) {
-      throw new Error('Chain seed config not found');
+      throw new ValidationError('Chain seed config not found');
     }
 
     // 1. Generate the master seed
@@ -79,7 +82,10 @@ async function generateKey(isMasterKey, chainId) {
     };
   } catch (error) {
     console.error('Error generating master key:', error);
-    throw error;
+    if (error instanceof CustodyError){
+      throw error;
+    }
+    throw new ProcessingError('Error generating master key: ' + error.message);
   }
 }
 
@@ -92,7 +98,7 @@ async function generateKey(isMasterKey, chainId) {
  */
 async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   if (masterKeyLabel && xPubKey) {
-    throw new Error('Only one of masterKeyLabel or xPubKey should be provided');
+    throw new ValidationError('Only one of masterKeyLabel or xPubKey should be provided');
   }
 
   const { masterSeed, masterSeedDb } = await getMasterSeed(masterKeyLabel, xPubKey);
@@ -100,7 +106,7 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const existingChildKey = await db(childTable.TABLE_NAME).where({ derivation_path: derivationPath, master_seed_id: masterSeedDb.id }).first();
 
   if (existingChildKey) {
-    throw new Error('Child key already exists');
+    throw new ValidationError('Child key already exists');
   }
 
   // 3. Derive the child key
@@ -130,7 +136,7 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   }));
 
   if (!childKeyDb) {
-    throw new Error('Error saving child key to database');
+    throw new ProcessingError('Error saving child key to database');
   }
 
   return { publicKey: uncompressedPublicKeyHex, address, accountXpub };
@@ -146,7 +152,7 @@ async function getMasterSeed(masterKeyLabel, xPubKey) {
       }
     
       if (!masterSeedDb) {
-        throw new Error('Master key not found');
+        throw new ProcessingError('Master key not found');
       }
     
       // 2. Decrypt master seed
@@ -157,7 +163,10 @@ async function getMasterSeed(masterKeyLabel, xPubKey) {
       return { masterSeed, masterSeedDb };
   } catch (err) {
     console.error('Error signing data:', err);
-    throw err;
+    if (err instanceof CustodyError){
+      throw err;
+    }
+    throw new ProcessingError('Error signing data');
   }
 }
 
