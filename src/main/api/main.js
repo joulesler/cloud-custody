@@ -1,10 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const Logger = require('../../lib/logger/config');
+const logger = require('../../lib/logger/config');
 const { migrate } = require('../../lib/db/db');
-
-const logger = new Logger();
 
 /**
  * API Server, on port 8080 for development
@@ -22,6 +20,7 @@ require('./transaction-service').signTransaction(app);
 require('./gnosis-service').addSignature(app);
 require('./gnosis-service').gnosisData(app);
 require('./gnosis-service').approveHash(app);
+require('./gnosis-service').getTransactionHash(app);
 
 // Always run database migration prior to starting the application
 migrate().then(() => {

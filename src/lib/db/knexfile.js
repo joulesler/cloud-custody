@@ -11,8 +11,7 @@ const knex = require('knex')({
   },
 });
 
-const Logger = require('../logger/config');
-const logger = new Logger();
+const logger = require('../logger/config');
 
 async function createDatabase() {
   try {

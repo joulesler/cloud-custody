@@ -94,7 +94,7 @@ function gnosisSignHash(privateKey, hash, chainId = false, options = {}) {
   const s = hexUtils.byteToHexString(signature.slice(32), true);
 
   // Compute the parity value V
-  const v = recid + 31; // rec-d + 31 is ONLY for eth_sign, not needed since we are using raw SECP signature on the raw hash
+  const v = recid + 27; // rec-d + 31 is ONLY for eth_sign, not needed since we are using raw SECP signature on the raw hash
   // @see https://github.com/safe-global/safe-smart-account/blob/main/contracts/Safe.sol#L313
 
   // Recover the public key from the signature

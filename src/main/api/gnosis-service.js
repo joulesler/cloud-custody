@@ -1,9 +1,14 @@
 // take in gnosis fields and create data back
 const { default: EthSafeTransaction } = require('@safe-global/protocol-kit/dist/src/utils/transactions/SafeTransaction');
 const SafeProtocol = require('@safe-global/protocol-kit')
+const Web3 = require('web3');
+const hexUtils = require('../../lib/hex');
+const logger = require('../../lib/logger/config');
 
 const ValidationError = require('../../lib/errors/validation-error');
 const safe = require('../../main/handlers/gnosis-safe/safe');
+const getTransactionHashAbi = require('../../../abi/gnosis/get-transaction-hash.json')
+const web3 = new Web3.Web3();
 /**
  * Function to onboard a chain
  * @param {*} app
@@ -23,7 +28,7 @@ function gnosisData(app) {
             if (('number' !== typeof operation && !operation ) || (operation !== safe.Operations.Call && operation !== safe.Operations.DelegateCall)) {
                 throw new ValidationError('operation must be either DelegateCall or Call')
             }
-            if (!gasPrice) {
+            if (!gasPrice && gasPrice !== 0) {
                 throw new ValidationError('gasPrice is required')
             }
 
@@ -60,7 +65,7 @@ function addSignature(app) {
             res.json({ success: true, safeTransaction });
         } catch (error) {
             // Send the error response
-            console.log(error);
+            logger.error(error);
             res.json({ success: false, error: error.message });
         }
     });
@@ -89,8 +94,29 @@ function approveHash(app) {
     });
 }
 
+function getTransactionHash(app){
+    app.get('/gnosis/getHashAbi', (req, res) => {
+        const { to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce } = req.body;
+        let abiData;
+        try {
+            const safeTxGasBN = hexUtils.numericalToBigInt(safeTxGas);
+            const baseGasBN = hexUtils.numericalToBigInt(baseGas);
+            const gasPriceBN = hexUtils.numericalToBigInt(gasPrice);
+            const valueBN = hexUtils.numericalToBigInt(value);
+            const nonceBN = hexUtils.numericalToBigInt(nonce);
+            
+            abiData = web3.eth.abi.encodeFunctionCall(getTransactionHashAbi, [to, valueBN, data, operation, safeTxGasBN, baseGasBN, gasPriceBN, gasToken, refundReceiver, nonceBN]);
+        } catch (e) {
+            logger.error(e.message)
+        }
+
+        res.send(abiData);
+    });
+}
+
 module.exports = { 
     gnosisData,
     addSignature,
-    approveHash
+    approveHash,
+    getTransactionHash
  }

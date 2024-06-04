@@ -14,6 +14,7 @@ const Operations = {
     DelegateCall: 1
 };
 
+const SAFE_TX_TYPEHASH = '0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8';
 /**
  * Solidity Transaction Object
  *     function execTransaction(
@@ -51,7 +52,7 @@ async function encodeExecTransaction(to, value, data, operation, safeTxGas, base
         // baseGas = 35000;
         baseGas = 0;
     }
-    if (!gasPrice) {
+    if (!gasPrice && gasPrice !== 0) {
         throw new ValidationError('gasPrice is required')
     }
 
@@ -101,6 +102,11 @@ async function approveHash(hash, keyLabel, derivationPath){
 
     const signature = await new SafeProtocol.EthSafeSignature(address, rawSignatureV, false);
     return {address, signature};
+}
+
+async function getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures) {
+    const encodedTransaction = await encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
+    return web3.utils.keccak256(encodedTransaction);
 }
 
 module.exports = {
