@@ -15,7 +15,18 @@ const Operations = {
 };
 
 const SAFE_TX_TYPEHASH = '0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8';
+
 /**
+ * @param {String} to - The address to send the transaction to.
+ * @param {Number} value - The value to send in the transaction.
+ * @param {String} data - The data to send in the transaction.
+ * @param {Number} operation - The operation to perform in the transaction.
+ * @param {Number} safeTxGas - The gas to send in the transaction.
+ * @param {Number} baseGas - The base gas to send in the transaction.
+ * @param {Number} gasPrice - The gas price to send in the transaction.
+ * @param {String} gasToken - The gas token to send in the transaction.
+ * @param {String} refundReceiver - The refund receiver to send in the transaction.
+ * @param {Map<String, SafeProtocol.EthSafeSignature>} signatures - The signatures to send in the transaction.
  * Solidity Transaction Object
  *     function execTransaction(
         address to,
@@ -28,8 +39,8 @@ const SAFE_TX_TYPEHASH = '0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6e
         address gasToken,
         address payable refundReceiver,
         bytes memory signatures
+ * @returns {String} - The encoded transaction.
  */
-
 async function encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken = '0x', refundReceiver, signatures) {
     // validations for input
     let estimateSafeTxGas = false;
