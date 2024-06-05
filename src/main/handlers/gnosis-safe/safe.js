@@ -115,10 +115,6 @@ async function approveHash(hash, keyLabel, derivationPath){
     return {address, signature};
 }
 
-async function getTransactionHash(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures) {
-    const encodedTransaction = await encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
-    return web3.utils.keccak256(encodedTransaction);
-}
 
 module.exports = {
     encodeExecTransaction,
