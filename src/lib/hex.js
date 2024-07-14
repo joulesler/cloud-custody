@@ -77,7 +77,7 @@ exports.hexStringToByteArray = (hexString) => {
 exports.numericalToBigInt = (numerical) => {
   if (typeof numerical === 'string') {
     if (numerical.startsWith('0x')){
-      if (!isValidHex(numerical)) {
+      if (!exports.isValidHex(numerical)) {
         throw new ValidationError('Invalid hexadecimal string');
       }
       return BigInt(numerical);
@@ -91,8 +91,6 @@ exports.numericalToBigInt = (numerical) => {
   }
 }
 
-exports.isValidHex = isValidHex;
-
-function isValidHex(hex) {
+exports.isValidHex = (hex) => {
   return /^0x[0-9a-fA-F]*$/.test(hex);
 }

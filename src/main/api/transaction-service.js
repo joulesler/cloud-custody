@@ -3,7 +3,7 @@ const serviceMapping = require('../handlers/transaction-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
 const chainConfig = require('../../lib/db/tables/chain-config')
 const chainEnum = require('../../lib/enums/chains');
-
+const ApiError = require('../../lib/errors/api-error');
 
 /**
  * 
@@ -13,88 +13,121 @@ const chainEnum = require('../../lib/enums/chains');
  * @param {*} transaction The transaction to be signed e.g. 
  * { "gas": 21000, "gasPrice": 20000000000, "nonce": 1, "to": "0x1234567890123456789012345678901234567890", "value": 1000000000000000, "data": "0x" }
  */
+async function transactionSignature(masterKeyLabel, chainName, derivationPath, transaction) {
+    if (!chainName) {
+        throw new Error('Chain name is required')
+    }
+
+    const chainData = await chainConfig.getChainByName(chainName);
+
+    const transactionType = chainData.transaction_type;
+
+    if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
+        throw new Error('Invalid transaction type from chain name');
+    }
+
+    if (!transaction) {
+        throw new Error('transaction is required');
+    }
+
+    if (!masterKeyLabel) {
+        throw new Error('masterKeyLabel is required');
+    }
+
+    // Get the chainId from the database, using request transactionType
+    const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
+        .signTransaction(masterKeyLabel, transaction, derivationPath, chainName);
+
+    return signature;
+}
+
+async function hashSignature(masterKeyLabel, chainName, derivationPath, hash) {
+    if (!chainName) {
+        throw new Error('Chain name is required')
+    }
+
+    const chainData = await chainConfig.getChainByName(chainName);
+
+    const transactionType = chainData.transaction_type;
+
+    if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
+        throw new Error('Invalid transaction type from chain name');
+    }
+
+    if (!hash) {
+        throw new Error('hash is required');
+    }
+
+    if (!masterKeyLabel) {
+        throw new Error('masterKeyLabel is required');
+    }
+
+    // Get the chainId from the database, using request transactionType
+    const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
+        .signHash(masterKeyLabel, hash, derivationPath, chainName);
+
+    return signature;
+}
+
+
 function signTransaction(app) {
     app.post('/transaction/sign', async (req, res) => {
         try {
-            // Get the chain id from the request
             const { masterKeyLabel, chainName, derivationPath, transaction } = req.body;
 
-            if (!chainName) {
-                throw new Error('Chain name is required')
+            if (!masterKeyLabel) {
+                throw new ApiError('masterKeyLabel is required');
             }
 
-            const chainData = await chainConfig.getChainByName(chainName);
-
-            const transactionType = chainData.transaction_type;
-
-            if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
-                throw new Error('Invalid transaction type from chain name');
+            if (!chainName) {
+                throw new ApiError('chainName is required');
             }
 
             if (!transaction) {
-                throw new Error('transaction is required');
+                throw new ApiError('transaction is required');
             }
 
-            if (!masterKeyLabel) {
-                throw new Error('masterKeyLabel is required');
-            }
+            const signature = await transactionSignature(masterKeyLabel, chainName, derivationPath, transaction);
 
-
-            // Get the chainId from the database, using request transactionType
-            const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
-                .signTransaction(masterKeyLabel, transaction, derivationPath, chainName);
-
-            // Send the response
-            res.json({ success: true, ...signature });
+            res.json({ success: true, signature });
         } catch (error) {
-            // Send the error response
-            console.log(error);
+            console.error(error);
             res.json({ success: false, error: error.message });
         }
     });
 }
 
-function signHash (app) {
+function signHash(app) {
     app.post('/transaction/signHash', async (req, res) => {
         try {
-            // Get the chain id from the request
             const { masterKeyLabel, chainName, derivationPath, hash } = req.body;
 
-            if (!chainName) {
-                throw new Error('Chain name is required')
+            if (!masterKeyLabel) {
+                throw new ApiError('masterKeyLabel is required');
             }
 
-            const chainData = await chainConfig.getChainByName(chainName);
-
-            const transactionType = chainData.transaction_type;
-
-            if (chainEnum.TRANSACTION_TYPE[transactionType] === undefined) {
-                throw new Error('Invalid transaction type from chain name');
+            if (!chainName) {
+                throw new ApiError('chainName is required');
             }
 
             if (!hash) {
-                throw new Error('hash is required');
+                throw new ApiError('hash is required');
             }
 
-            if (!masterKeyLabel) {
-                throw new Error('masterKeyLabel is required');
-            }
+            const signature = await hashSignature(masterKeyLabel, chainName, derivationPath, hash);
 
-            // Get the chainId from the database, using request transactionType
-            const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
-                .signHash(masterKeyLabel, hash, derivationPath, chainName);
-
-            // Send the response
             res.json({ success: true, signature });
         } catch (error) {
-            // Send the error response
-            console.log(error);
+            console.error(error);
             res.json({ success: false, error: error.message });
         }
     });
 }
+
 
 module.exports = {
     signTransaction,
     signHash,
+    transactionSignature,
+    hashSignature
 };

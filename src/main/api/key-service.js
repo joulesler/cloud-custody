@@ -47,6 +47,11 @@ function generateKey(app) {
   });
 }
 
+/**
+ * 
+ * @param {import('express').Express} app
+ * @returns {import('express').Express} 
+ */
 function generateChildKey(app) {
   app.post('/key/child', async (req, res) => {
     try {
@@ -86,6 +91,8 @@ function generateChildKey(app) {
       res.json({ success: false, error: error.message });
     }
   });
+
+  return app;
 }
 
 module.exports = {
