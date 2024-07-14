@@ -1,4 +1,4 @@
-const CustodyError = require("./custody-error");
+const CustodyError = require('./custody-error');
 
 class ValidationError extends CustodyError {
   constructor(message, status = 400) {

@@ -13,7 +13,7 @@ function isValidSecp256k1PrivateKey(privateKey) {
 function publicKeyToEthAddress(publicKey) {
   console.log('publicKey:', publicKey);
 
-  if (publicKey.length == 33){
+  if (publicKey.length == 33) {
     // this is the compressed public key
     // decompress it
     publicKey = secp256k1.publicKeyConvert(publicKey, false);
@@ -34,11 +34,10 @@ function publicKeyToEthAddress(publicKey) {
 
   // Ensure the address starts with '0x'
   const ethAddress = address.startsWith('0x') ? address : `0x${address}`;
-  
+
   // return the uncompressed public key and the Ethereum address
   return { uncompressedPublicKey: publicKey, address: ethAddress };
 }
-
 
 /**
  * @param {string} privateKey a hex encoded private key
@@ -73,12 +72,13 @@ function signHash(privateKey, hash, chainId = false, options = {}) {
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
   console.log('signature valid:', valid);
 
-  return { r, s, v: hexUtils.integerToHexString(v), rawSignature: signature };
-
+  return {
+    r, s, v: hexUtils.integerToHexString(v), rawSignature: signature,
+  };
 }
 
 /**
- * 
+ *
  * @param {string} privateKey a hex encoded private key
  * @param {string} hash a hex encoded hash to sign (6 ELEMENTS only)
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md#specification
@@ -108,8 +108,9 @@ function gnosisSignHash(privateKey, hash, chainId = false, options = {}) {
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
   console.log('signature valid:', valid);
 
-  return { r, s, v: hexUtils.integerToHexString(v), rawSignature: signature};
-
+  return {
+    r, s, v: hexUtils.integerToHexString(v), rawSignature: signature,
+  };
 }
 
 module.exports = {

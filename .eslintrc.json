@@ -1,8 +1,10 @@
 {
-    "extends": "airbnb-base",
-    "rules": {
-      "no-console": "off",
-      "linebreak-style": ["error", "unix"]// Enforce LF line endings, ignore CRLF
-
-    }
+  "extends": "airbnb-base",
+  "rules": {
+    "no-console": "off",
+    "linebreak-style": [
+      "error",
+      "unix"
+    ] // Enforce LF line endings, ignore CRLF
   }
+}

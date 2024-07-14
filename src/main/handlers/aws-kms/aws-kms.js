@@ -82,10 +82,10 @@ async function generateKey(isMasterKey, chainId) {
     };
   } catch (error) {
     console.error('Error generating master key:', error);
-    if (error instanceof CustodyError){
+    if (error instanceof CustodyError) {
       throw error;
     }
-    throw new ProcessingError('Error generating master key: ' + error.message);
+    throw new ProcessingError(`Error generating master key: ${error.message}`);
   }
 }
 
@@ -115,17 +115,17 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const childKey = hdkey.derive(derivationPath);
 
   const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 3).join('/')).publicExtendedKey;
-  console.log('accountXpub:', accountXpub)
+  console.log('accountXpub:', accountXpub);
 
   // TODO check that derivation is correct from the data to the mapping
-  console.log('childKey:', childKey)
-  console.log('childKey.publicKey:', childKey.publicKey)
+  console.log('childKey:', childKey);
+  console.log('childKey.publicKey:', childKey.publicKey);
 
   const { uncompressedPublicKey, address } = publicKeyToEthAddress(childKey.publicKey);
 
-  const uncompressedPublicKeyHex = Array.from(uncompressedPublicKey, byte => byte.toString(16).padStart(2, '0')).join('');
+  const uncompressedPublicKeyHex = Array.from(uncompressedPublicKey, (byte) => byte.toString(16).padStart(2, '0')).join('');
 
-  console.log('uncompressedPublicKey:', uncompressedPublicKeyHex)
+  console.log('uncompressedPublicKey:', uncompressedPublicKeyHex);
   // 4. Save key to child key db
   const childKeyDb = await db(childTable.TABLE_NAME).insert(new childTable.ChildKeys({
     is_child: true,
@@ -144,26 +144,26 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
 
 async function getMasterSeed(masterKeyLabel, xPubKey) {
   try {
-      let masterSeedDb;
-      if (masterKeyLabel) {
-        masterSeedDb = await db(masterTable.TABLE_NAME).where({ encrypting_key_label: masterKeyLabel }).first();
-      } else {
-        masterSeedDb = await db(masterTable.TABLE_NAME).where({ x_pub_key: xPubKey }).first();
-      }
-    
-      if (!masterSeedDb) {
-        throw new ProcessingError('Master key not found');
-      }
-    
-      // 2. Decrypt master seed
-      const encryptedSeed = Buffer.from(masterSeedDb.encrypted_seed, 'hex');
-      const decryptedSeed = await kms.decryptData(encryptedSeed, masterSeedDb.encrypting_key_label);
-      const masterSeed = decryptedSeed.toString('hex');
-      
-      return { masterSeed, masterSeedDb };
+    let masterSeedDb;
+    if (masterKeyLabel) {
+      masterSeedDb = await db(masterTable.TABLE_NAME).where({ encrypting_key_label: masterKeyLabel }).first();
+    } else {
+      masterSeedDb = await db(masterTable.TABLE_NAME).where({ x_pub_key: xPubKey }).first();
+    }
+
+    if (!masterSeedDb) {
+      throw new ProcessingError('Master key not found');
+    }
+
+    // 2. Decrypt master seed
+    const encryptedSeed = Buffer.from(masterSeedDb.encrypted_seed, 'hex');
+    const decryptedSeed = await kms.decryptData(encryptedSeed, masterSeedDb.encrypting_key_label);
+    const masterSeed = decryptedSeed.toString('hex');
+
+    return { masterSeed, masterSeedDb };
   } catch (err) {
     console.error('Error signing data:', err);
-    if (err instanceof CustodyError){
+    if (err instanceof CustodyError) {
       throw err;
     }
     throw new ProcessingError('Error signing data');
@@ -171,8 +171,8 @@ async function getMasterSeed(masterKeyLabel, xPubKey) {
 }
 
 /**
- * Obtain the 32 byte/ 256 bit random nonce (k - ephermeral key) 
- * Used in the p = kG applied to the ECDSA signature, 
+ * Obtain the 32 byte/ 256 bit random nonce (k - ephermeral key)
+ * Used in the p = kG applied to the ECDSA signature,
  * Where the resultant r value is broadcast
  */
 async function generateNonce() {
@@ -184,5 +184,5 @@ module.exports = {
   generateKey,
   deriveChildKey,
   getMasterSeed,
-  generateNonce
+  generateNonce,
 };

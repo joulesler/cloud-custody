@@ -3,7 +3,7 @@ const { db } = require('../db');
 
 class Chains {
   constructor({
-    id, chain_name, public_chain_identifier, key_algo, seed_length, transaction_type
+    id, chain_name, public_chain_identifier, key_algo, seed_length, transaction_type,
   }) {
     this.id = id;
     this.chain_name = chain_name;
@@ -24,7 +24,7 @@ async function getChainByPubId(public_chain_identifier) {
 
 async function getChainByName(chain_name) {
   const chain = await db(TABLE_NAME)
-    .where({chain_name})
+    .where({ chain_name })
     .select('*')
     .first();
   return chain;
@@ -34,5 +34,5 @@ module.exports = {
   Chains,
   TABLE_NAME,
   getChainByPubId,
-  getChainByName
+  getChainByName,
 };

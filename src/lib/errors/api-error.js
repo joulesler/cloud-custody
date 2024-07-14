@@ -1,4 +1,4 @@
-const CustodyError = require("./custody-error");
+const CustodyError = require('./custody-error');
 
 class ApiError extends CustodyError {
   constructor(message, status = 400) {

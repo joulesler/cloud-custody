@@ -124,7 +124,7 @@ async function generateRandomSeed(numberOfBytes = 64) {
     return Plaintext.toString('hex');
   } catch (err) {
     console.error('Error generating random seed:', err);
-    throw new ProcessingError('Error generating random seed: ' + err.message);
+    throw new ProcessingError(`Error generating random seed: ${err.message}`);
   }
 }
 
@@ -144,15 +144,15 @@ async function encryptData(dataToEncrypt, encryptionKeyId) {
     return encryptedData.CiphertextBlob;
   } catch (err) {
     console.error('Error encrypting data:', err);
-    throw new ProcessingError('Error encrypting data: ' + err.message);
+    throw new ProcessingError(`Error encrypting data: ${err.message}`);
   }
 }
 
 /**
- * 
- * @param {*} dataToDecrypt 
- * @param {*} encryptionKeyId 
- * @returns 
+ *
+ * @param {*} dataToDecrypt
+ * @param {*} encryptionKeyId
+ * @returns
  */
 async function decryptData(dataToDecrypt, encryptionKeyId) {
   const kms = kmsClient();
@@ -164,7 +164,7 @@ async function decryptData(dataToDecrypt, encryptionKeyId) {
     return decryptedData.Plaintext;
   } catch (err) {
     console.error('Error decrypting data:', err);
-    throw new ProcessingError('Error decrypting data: ' + err.message);
+    throw new ProcessingError(`Error decrypting data: ${err.message}`);
   }
 }
 

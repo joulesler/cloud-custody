@@ -21,11 +21,13 @@ const { TRANSACTION_TYPE } = require('../../lib/enums/chains');
  */
 function onboardChain(app) {
   app.post('/chain/onboard', async (req, res) => {
-    const { chainName: chain_name, 
-      publicChainIdentifier: public_chain_identifier, 
-      keyAlgo:  key_algo,
+    const {
+      chainName: chain_name,
+      publicChainIdentifier: public_chain_identifier,
+      keyAlgo: key_algo,
       transactionType: transaction_type,
-      seedLength: seed_length } = req.body;
+      seedLength: seed_length,
+    } = req.body;
 
     // Validate the request body
     if (!chain_name || !public_chain_identifier || !key_algo || !KEY_ALGO[key_algo] || !transaction_type || !TRANSACTION_TYPE[transaction_type]) {
@@ -39,7 +41,9 @@ function onboardChain(app) {
     }
 
     try {
-      const chain = new Chains({ chain_name, public_chain_identifier, key_algo, seed_length, transaction_type});
+      const chain = new Chains({
+        chain_name, public_chain_identifier, key_algo, seed_length, transaction_type,
+      });
       // Save the chainId to the 'chain_config' table
       await db(TABLE_NAME).insert(chain);
       res.status(200).json({ message: 'ChainId onboarded successfully' });
@@ -52,7 +56,7 @@ function onboardChain(app) {
 
 function getChainData(app) {
   app.get('/chain/:chainId', async (req, res) => {
-    const chainId = req.params.chainId;
+    const { chainId } = req.params;
 
     try {
       // Retrieve the chain data from the 'chain_config' table
@@ -77,5 +81,5 @@ function getChainData(app) {
 
 module.exports = {
   onboardChain,
-  getChainData
+  getChainData,
 };

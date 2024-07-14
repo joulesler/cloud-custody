@@ -7,12 +7,12 @@ const queueName = process.env.PRODUCER_QUEUE || 'default';
 
 const factory = {
   create: () => amqp.connect(rabbitmqUrl),
-  destroy: (connection) => connection.close()
+  destroy: (connection) => connection.close(),
 };
 
 const opts = {
   max: 10, // maximum size of the pool
-  min: 2   // minimum size of the pool
+  min: 2, // minimum size of the pool
 };
 
 const pool = createPool(factory, opts);

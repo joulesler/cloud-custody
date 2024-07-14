@@ -48,9 +48,9 @@ function generateKey(app) {
 }
 
 /**
- * 
+ *
  * @param {import('express').Express} app
- * @returns {import('express').Express} 
+ * @returns {import('express').Express}
  */
 function generateChildKey(app) {
   app.post('/key/child', async (req, res) => {

@@ -7,5 +7,5 @@ const KEY_SERVICES = {
 };
 
 module.exports = {
-    KEY_SERVICES,
+  KEY_SERVICES,
 };
