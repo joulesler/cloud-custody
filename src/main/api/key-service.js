@@ -3,6 +3,68 @@ const serviceMapping = require('../handlers/service-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
 const ValidationError = require('../../lib/errors/validation-error');
 
+
+async function keyGeneration({chainId, isMasterKey, keyType, kmsType}) {
+  try {
+    // Validate body
+    if (!chainId) {
+      throw new ValidationError('chainId is required');
+    }
+    // Validate kmsType
+    if (!keyType || !keyEnums.KEY_REFERENCE_TYPE[keyType]) {
+      throw new ValidationError(`Valid keyType ${Object.keys(keyEnums.KEY_REFERENCE_TYPE)} is required`);
+    }
+
+    if (!kmsType || !keyEnums.SUPPORTED_KMS[kmsType]) {
+      throw new ValidationError(`Valid kmsType ${Object.keys(keyEnums.SUPPORTED_KMS)} is required`);
+    }
+
+    // Generate the master key pair
+    const keyPair = await serviceMapping.KEY_SERVICES[kmsType].generateKey(isMasterKey, chainId);
+
+    // Send the response
+    return { success: true, keyPair };
+  } catch (error) {
+    // Send the error response
+    return { success: false, error: error.message };
+  }
+}
+
+async function childKeyGeneration({derivationPath, masterKeyLabel, xPubKey}) {
+  try {
+    if (masterKeyLabel && xPubKey) {
+      throw new ValidationError('Only one of masterKeyLabel or xPubKey should be provided');
+    }
+
+    if (!derivationPath) {
+      throw new ValidationError('derivationPath is required');
+    }
+
+    if (!masterKeyLabel && !xPubKey) {
+      throw new ValidationError('Either masterKeyLabel or xPubKey is required');
+    }
+
+    let keyData;
+
+    if (masterKeyLabel) { keyData = await masterSeed.getKeyStoreTypeFromLabel(masterKeyLabel); }
+    if (xPubKey) { keyData = await masterSeed.getKeyStoreTypeFromPubKey(xPubKey); }
+
+    const kmsType = keyData.key_store_type;
+
+    if (!kmsType) {
+      throw new ValidationError('kmsType not found');
+    }
+    // Generate the master key pair
+    const keyPair = await serviceMapping.KEY_SERVICES[kmsType].deriveChildKey(derivationPath, { masterKeyLabel, xPubKey });
+
+    // Send the response
+    return { success: true, keyPair };
+  } catch (error) {
+    // Send the error response
+    return { success: false, error: error.message };
+  }
+}
+
 /**
  * <h> Generate a master key pair for a chain </h>
  * <p> This is a POST request that generates a master key pair for a chain. </p>
@@ -98,4 +160,6 @@ function generateChildKey(app) {
 module.exports = {
   generateKey,
   generateChildKey,
+  keyGeneration,
+  childKeyGeneration,
 };

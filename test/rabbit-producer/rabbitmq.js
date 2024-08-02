@@ -1,13 +1,14 @@
 require('dotenv').config();
 const amqp = require('amqplib');
+const logger = require('../../src/lib/logger/config');
 const { createPool } = require('generic-pool');
+const ProcessingError = require('../../src/lib/errors/processing-error');
 
-const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost';
-const queueName = process.env.PRODUCER_QUEUE || 'default';
+const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
 
 const factory = {
-  create: () => amqp.connect(rabbitmqUrl),
-  destroy: (connection) => connection.close(),
+  create: async () => await amqp.connect(rabbitmqUrl),
+  destroy: async (connection) => await connection.close(),
 };
 
 const opts = {
@@ -15,42 +16,84 @@ const opts = {
   min: 2, // minimum size of the pool
 };
 
-const pool = createPool(factory, opts);
+let pool = createPool(factory, opts);
 
-async function sendToQueue(message) {
+async function initializePool() {
+  if (!pool) {
+    try {
+      pool = await createPool(factory, opts);
+    } catch (err) {
+      logger.error('Error initializing connection pool:', err);
+      throw new ProcessingError('Error initializing connection pool');
+    }
+  }
+}
+
+async function sendToQueue(queueName, message) {
+  await initializePool();
   const connection = await pool.acquire();
   try {
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName, { durable: false });
+    if ('object' === typeof message) {
+      message = JSON.stringify(message);
+    }
     channel.sendToQueue(queueName, Buffer.from(message));
-    console.log(` [x] Sent ${message}`);
+    logger.info(`Sent message: ${message}`);
     await channel.close();
   } catch (err) {
-    console.error('Error sending message to queue:', err);
+    logger.error('Error sending message to queue:', err);
+    throw new ProcessingError('Error sending message to queue');
   } finally {
-    pool.release(connection);
+    await pool.release(connection);
   }
 }
 
 async function readFromQueue(callback) {
+  await initializePool();
   const connection = await pool.acquire();
   try {
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName, { durable: false });
-    console.log(` [*] Waiting for messages in ${queueName}. To exit press CTRL+C`);
+    logger.info(`Waiting for messages in ${queueName}. To exit press CTRL+C`);
     channel.consume(queueName, (msg) => {
       if (msg !== null) {
         const messageContent = msg.content.toString();
-        console.log(` [x] Received ${messageContent}`);
-        callback(messageContent);
-        channel.ack(msg);
+        console.log(` [x] Received ${messageContent} from ${queueName}`);
+        try {
+            messageContent = JSON.parse(messageContent);
+        } catch (e) {
+            // no-op
+        }
+        const { payload } = JSON.parse(messageContent);
+
+        logger.info(`Received message: ${messageContent}`);
+        try {
+          callback(payload);
+          channel.ack(msg);
+        } catch (callbackError) {
+          logger.error('Error in message processing callback:', callbackError);
+          // Optionally, re-queue the message for later processing
+        }
       }
     });
   } catch (err) {
-    console.error('Error reading message from queue:', err);
+    logger.error('Error reading message from queue:', err);
   } finally {
-    // Do not release the connection here as it is being used for consuming messages
+    // Optionally handle connection release on shutdown or specific errors
   }
+
+  // Handle graceful shutdown
+  process.on('SIGINT', async () => {
+    try {
+      logger.info('Closing RabbitMQ connection');
+      await connection.close();
+      process.exit(0);
+    } catch (shutdownError) {
+      logger.error('Error during shutdown:', shutdownError);
+      process.exit(1);
+    }
+  });
 }
 
 module.exports = { sendToQueue, readFromQueue };

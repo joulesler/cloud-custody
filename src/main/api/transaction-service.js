@@ -13,7 +13,7 @@ const ApiError = require('../../lib/errors/api-error');
  * @param {*} transaction The transaction to be signed e.g.
  * { "gas": 21000, "gasPrice": 20000000000, "nonce": 1, "to": "0x1234567890123456789012345678901234567890", "value": 1000000000000000, "data": "0x" }
  */
-async function transactionSignature(masterKeyLabel, chainName, derivationPath, transaction) {
+async function transactionSignature({masterKeyLabel, chainName, derivationPath, transaction}) {
   if (!chainName) {
     throw new Error('Chain name is required');
   }
@@ -41,7 +41,7 @@ async function transactionSignature(masterKeyLabel, chainName, derivationPath, t
   return signature;
 }
 
-async function hashSignature(masterKeyLabel, chainName, derivationPath, hash) {
+async function hashSignature({masterKeyLabel, chainName, derivationPath, hash}) {
   if (!chainName) {
     throw new Error('Chain name is required');
   }

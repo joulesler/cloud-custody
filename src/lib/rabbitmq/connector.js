@@ -20,14 +20,14 @@ const publicKey = process.env.PUBLIC_KEY;
 
 async function validateSignature(signature, payload) {
     const verifier = crypto.createVerify('sha256');
-    verifier.update(payload);
+    verifier.update(Buffer.from(payload, 'utf-8'));
     const isValid = verifier.verify(publicKey, signature, 'hex');
     return isValid;
 }
 
 async function signPayload(payload) {
     const signer = crypto.createSign('sha256');
-    signer.update(payload);
+    signer.update(Buffer.from(payload, 'utf-8'));
     const signature = signer.sign(privateKey, 'hex');
     return signature;
 }
@@ -41,10 +41,13 @@ async function sendToQueue(queueName, message) {
         await channel.assertQueue(queueName, { durable: false });
 
         // Sign the message
+        if (typeof message === 'object') {
+            message = JSON.stringify(message, null, 0);
+        }
         const signature = await signPayload(message);
         const signedMessage = JSON.stringify({ payload: message, signature });
 
-        channel.sendToQueue(queueName, Buffer.from(signedMessage));
+        channel.sendToQueue(queueName, Buffer.from(signedMessage, 'utf-8'));
         console.log(` [x] Sent ${signedMessage} to ${queueName}`);
         await channel.close();
     } catch (err) {
@@ -63,9 +66,14 @@ async function readFromQueue(queueName, endpointMapping) {
         channel.consume(queueName, (msg) => {
             if (msg !== null) {
                 (async () => {
-                    const messageContent = msg.content.toString();
+                    let messageContent = msg.content.toString('utf-8');
                     console.log(` [x] Received ${messageContent} from ${queueName}`);
-                    const { payload, signature } = JSON.parse(messageContent);
+                    try {
+                        messageContent = JSON.parse(messageContent);
+                    } catch (e) {
+                        // no-op
+                    }
+                    const { payload, signature } = messageContent;
 
                     // Validate the signature
                     const isValid = await validateSignature(signature, payload);
@@ -75,10 +83,11 @@ async function readFromQueue(queueName, endpointMapping) {
                         return;
                     }
 
-                    const { endpoint, data } = JSON.parse(payload);
+                    const data = JSON.parse(payload);
                     try {
-                        if (endpointMapping[endpoint]) {
-                            await endpointMapping[endpoint](data);
+                        if (endpointMapping[queueName]) {
+                            response = await endpointMapping[queueName](data);
+                            sendToQueue('response', response);
                             channel.ack(msg); // Acknowledge the message
                         } else {
                             console.error(`No handler registered for endpoint: ${endpoint}`);
@@ -87,7 +96,7 @@ async function readFromQueue(queueName, endpointMapping) {
                     } catch (err) {
                         console.error(`Error processing message: ${err}`);
                         // Negative acknowledgment and requeue the message
-                        // If the message is requeued multiple times, it can be routed to the DLQ based on your RabbitMQ configuration
+                        // If the message is requeued multiple times, it can be routed to the DLQ
                         channel.nack(msg, false, false); // Send to DLQ
                     }
                 })();

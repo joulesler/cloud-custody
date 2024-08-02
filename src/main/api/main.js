@@ -22,6 +22,18 @@ require('./gnosis-service').gnosisData(app);
 require('./gnosis-service').approveHash(app);
 require('./gnosis-service').getTransactionHash(app);
 
+// Test endpoints
+require('../../../test/rabbit-producer/api/api-to-mq').signHash(app);
+
+// MQ Endpoints
+require('../mq/transaction-service');
+require('../mq/key-service');
+
+// health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'UP' });
+});
+
 // Always run database migration prior to starting the application
 migrate().then(() => {
   logger.info('Migrations run successfully');
@@ -31,6 +43,12 @@ migrate().then(() => {
 }).catch((err) => {
   logger.error('Could not setup database, please check db config');
   logger.error(err);
+});
+
+// error handler
+app.use((err, req, res, next) => {
+  logger.error(err);
+  res.status(500).send('Internal Server Error');
 });
 
 module.exports = app;
