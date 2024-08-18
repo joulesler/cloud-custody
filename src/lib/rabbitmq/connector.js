@@ -34,7 +34,7 @@ async function signPayload(payload) {
 
 const pool = createPool(factory, opts);
 
-async function sendToQueue(queueName, message) {
+async function sendToQueue(queueName, message, req_id) {
     const connection = await pool.acquire();
     try {
         const channel = await connection.createChannel();
@@ -42,6 +42,7 @@ async function sendToQueue(queueName, message) {
 
         // Sign the message
         if (typeof message === 'object') {
+            message.req_id = req_id;
             message = JSON.stringify(message, null, 0);
         }
         const signature = await signPayload(message);
@@ -73,7 +74,7 @@ async function readFromQueue(queueName, endpointMapping) {
                     } catch (e) {
                         // no-op
                     }
-                    const { payload, signature } = messageContent;
+                    const { payload, signature, type } = messageContent;
 
                     // Validate the signature
                     const isValid = await validateSignature(signature, payload);
@@ -84,11 +85,14 @@ async function readFromQueue(queueName, endpointMapping) {
                     }
 
                     const data = JSON.parse(payload);
-                    const {txn_id } = data;
+                    const { req_id } = data;
                     try {
-                        if (endpointMapping[queueName]) {
-                            response = await endpointMapping[queueName](data);
-                            sendToQueue('response', response);
+                        // If using segregated queues, use the queue name as the endpoint
+                        // If using single queue, use the type as the endpoint (e.g. queueName = 'request', type = 'gen_xpub')
+                        if (endpointMapping[queueName] || endpointMapping[type]) {
+                            const endpoint = endpointMapping[queueName] ? endpointMapping[queueName] : endpointMapping[type];
+                            response = await endpoint(data);
+                            sendToQueue('response', response, req_id);
                             channel.ack(msg); // Acknowledge the message
                         } else {
                             console.error(`No handler registered for endpoint: ${endpoint}`);
@@ -98,7 +102,7 @@ async function readFromQueue(queueName, endpointMapping) {
                         console.error(`Error processing message: ${err}`);
                         // Negative acknowledgment and requeue the message
                         // If the message is requeued multiple times, it can be routed to the DLQ
-                        sendToQueue('response', { error: err.message, txn_id });
+                        sendToQueue('response', { error: err.message, req_id });
                         channel.nack(msg, false, false); // Send to DLQ
                     }
                 })();
