@@ -4,6 +4,7 @@ const { createPool } = require('generic-pool');
 const crypto = require('crypto');
 
 const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost';
+const responseQueue = process.env.RESPONSE_QUEUE_NAME || 'response';
 
 const factory = {
     create: () => amqp.connect(rabbitmqUrl),
@@ -92,7 +93,7 @@ async function readFromQueue(queueName, endpointMapping) {
                         if (endpointMapping[queueName] || endpointMapping[type]) {
                             const endpoint = endpointMapping[queueName] ? endpointMapping[queueName] : endpointMapping[type];
                             response = await endpoint(data);
-                            sendToQueue('response', response, req_id);
+                            sendToQueue(responseQueue, response, req_id);
                             channel.ack(msg); // Acknowledge the message
                         } else {
                             console.error(`No handler registered for endpoint: ${endpoint}`);
@@ -102,7 +103,7 @@ async function readFromQueue(queueName, endpointMapping) {
                         console.error(`Error processing message: ${err}`);
                         // Negative acknowledgment and requeue the message
                         // If the message is requeued multiple times, it can be routed to the DLQ
-                        sendToQueue('response', { error: err.message, req_id });
+                        sendToQueue(responseQueue, { error: err.message, req_id });
                         channel.nack(msg, false, false); // Send to DLQ
                     }
                 })();
