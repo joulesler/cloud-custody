@@ -10,8 +10,87 @@ const safe = require('../handlers/gnosis-safe/safe');
 const getTransactionHashAbi = require('../../../abi/gnosis/get-transaction-hash.json');
 
 const web3 = new Web3.Web3();
+
+async function gnosisTransaction({ to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures }) {
+  try {
+    if (!to) {
+      throw new ValidationError('to address is required');
+    }
+    if (!value) {
+      throw new ValidationError('value is required');
+    }
+    // enum make sure its of the two values, DelegateCall or Call
+    if ((typeof operation !== 'number' && !operation) || (operation !== safe.Operations.Call && operation !== safe.Operations.DelegateCall)) {
+      throw new ValidationError('operation must be either DelegateCall or Call');
+    }
+    if (!gasPrice && gasPrice !== 0) {
+      throw new ValidationError('gasPrice is required');
+    }
+
+    const abiEncodeDdata = await safe.encodeExecTransaction(to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures);
+
+    return { success: true, encodedData: abiEncodeDdata };
+  } catch (error) {
+    // Send the error response
+    logger.error(error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function gnosisAddSignature({ ethSafeTransaction, ethSignSignature }) {
+  try {
+    if (!ethSafeTransaction) {
+      throw new ValidationError('ethSafeTransaction is required');
+    }
+    if (!ethSignSignature) {
+      throw new ValidationError('ethSignSignature is required');
+    }
+
+    const safeTransaction = await safe.addSignatureToSafeTransaction(ethSafeTransaction, ethSignSignature);
+
+    return { success: true, safeTransaction };
+  } catch (error) {
+    // Send the error response
+    logger.error(error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function gnosisApproveHash({ safeTxHash, masterKeyLabel, derivationPath }) {
+  try {
+    if (!safeTxHash) {
+      throw new ValidationError('safeTxHash is required');
+    }
+
+    const safeSignature = await safe.approveHash(safeTxHash, masterKeyLabel, derivationPath);
+    return { success: true, ...safeSignature };
+  } catch (error) {
+    // Send the error response
+    logger.error(error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function gnosisGetTransactionHash({ to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce }) {
+  let abiData;
+  try {
+    const safeTxGasBN = hexUtils.numericalToBigInt(safeTxGas);
+    const baseGasBN = hexUtils.numericalToBigInt(baseGas);
+    const gasPriceBN = hexUtils.numericalToBigInt(gasPrice);
+    const valueBN = hexUtils.numericalToBigInt(value);
+    const nonceBN = hexUtils.numericalToBigInt(nonce);
+
+    abiData = web3.eth.abi.encodeFunctionCall(getTransactionHashAbi, [to, valueBN, data, operation, safeTxGasBN, baseGasBN, gasPriceBN, gasToken, refundReceiver, nonceBN]);
+  } catch (e) {
+    logger.error(e.message);
+    return { success: false, error: e.message };
+  }
+  return abiData;
+}
+
+
 /**
- * Function to onboard a chain
+ * Function to generate gnosis safe transaction data
  * @param {*} app
  */
 function gnosisData(app) {
@@ -124,4 +203,8 @@ module.exports = {
   addSignature,
   approveHash,
   getTransactionHash,
+  gnosisTransaction,
+  gnosisAddSignature,
+  gnosisApproveHash,
+  gnosisGetTransactionHash,
 };

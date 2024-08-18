@@ -11,8 +11,8 @@ const factory = {
 };
 
 const opts = {
-    max: 10, // maximum size of the pool
-    min: 2, // minimum size of the pool
+    max: 20, // maximum size of the pool
+    min: 10, // minimum size of the pool
 };
 
 const privateKey = process.env.PRIVATE_KEY;
@@ -84,6 +84,7 @@ async function readFromQueue(queueName, endpointMapping) {
                     }
 
                     const data = JSON.parse(payload);
+                    const {txn_id } = data;
                     try {
                         if (endpointMapping[queueName]) {
                             response = await endpointMapping[queueName](data);
@@ -97,6 +98,7 @@ async function readFromQueue(queueName, endpointMapping) {
                         console.error(`Error processing message: ${err}`);
                         // Negative acknowledgment and requeue the message
                         // If the message is requeued multiple times, it can be routed to the DLQ
+                        sendToQueue('response', { error: err.message, txn_id });
                         channel.nack(msg, false, false); // Send to DLQ
                     }
                 })();

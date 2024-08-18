@@ -2,10 +2,10 @@
   "name": "cloud-custody",
   "version": "1.0.0",
   "description": "KMS Cloudhsm development",
-  "main": "index.js",
+  "main": "./src/main/main.js",
   "scripts": {
     "test": "test",
-    "dev": "nodemon ./src/main/api/main.js",
+    "dev": "nodemon ./src/main/main.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -28,6 +28,7 @@
   "dependencies": {
     "@safe-global/protocol-kit": "^3.1.1",
     "@safe-global/safe-core-sdk-types": "^5.0.0",
+    "@scalar/express-api-reference": "^0.4.129",
     "@scure/bip32": "^1.4.0",
     "amqplib": "^0.10.4",
     "aws-sdk": "^2.1603.0",
@@ -42,6 +43,9 @@
     "pg": "^8.11.5",
     "queue": "^7.0.0",
     "secp256k1": "^5.0.0",
+    "swagger-doc": "^0.3.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.1",
     "web3": "^4.8.0",
     "winston": "^3.13.0"

@@ -1,6 +1,4 @@
-const keyEnums = require('../../lib/enums/keys');
 const serviceMapping = require('../handlers/transaction-mapping');
-const masterSeed = require('../../lib/db/tables/master-seed');
 const chainConfig = require('../../lib/db/tables/chain-config');
 const chainEnum = require('../../lib/enums/chains');
 const ApiError = require('../../lib/errors/api-error');
@@ -64,7 +62,7 @@ async function hashSignature({masterKeyLabel, chainName, derivationPath, hash}) 
 
   // Get the chainId from the database, using request transactionType
   const signature = await serviceMapping.TRANSACTION_SERVICES[transactionType]
-    .signHash(masterKeyLabel, hash, derivationPath, chainName);
+    .signHash(masterKeyLabel, chainName, derivationPath, hash);
 
   return signature;
 }
@@ -88,7 +86,7 @@ function signTransaction(app) {
         throw new ApiError('transaction is required');
       }
 
-      const signature = await transactionSignature(masterKeyLabel, chainName, derivationPath, transaction);
+      const signature = await transactionSignature({masterKeyLabel, chainName, derivationPath, transaction});
 
       res.json({ success: true, signature });
     } catch (error) {
@@ -117,7 +115,7 @@ function signHash(app) {
         throw new ApiError('hash is required');
       }
 
-      const signature = await hashSignature(masterKeyLabel, chainName, derivationPath, hash);
+      const signature = await hashSignature({masterKeyLabel, chainName, derivationPath, hash});
 
       res.json({ success: true, signature });
     } catch (error) {

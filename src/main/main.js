@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
-const logger = require('../../lib/logger/config');
-const { migrate } = require('../../lib/db/db');
-
+const logger = require('../lib/logger/config');
+const { migrate } = require('../lib/db/db');
+const apiConfig = require('./oas.config');
 /**
  * API Server, on port 8080 for development
  */
@@ -11,23 +11,27 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(bodyParser.json());
-require('./key-service').generateChildKey(app);
-require('./key-service').generateKey(app);
-require('./chain-service').getChainData(app);
-require('./chain-service').onboardChain(app);
-require('./transaction-service').signHash(app);
-require('./transaction-service').signTransaction(app);
-require('./gnosis-service').addSignature(app);
-require('./gnosis-service').gnosisData(app);
-require('./gnosis-service').approveHash(app);
-require('./gnosis-service').getTransactionHash(app);
+require('./api/key-service').generateChildKey(app);
+require('./api/key-service').generateKey(app);
+require('./api/chain-service').getChainData(app);
+require('./api/chain-service').onboardChain(app);
+require('./api/transaction-service').signHash(app);
+require('./api/transaction-service').signTransaction(app);
+require('./api/gnosis-service').addSignature(app);
+require('./api/gnosis-service').gnosisData(app);
+require('./api/gnosis-service').approveHash(app);
+require('./api/gnosis-service').getTransactionHash(app);
+
+// Swagger UI
+apiConfig(app);
 
 // Test endpoints
-require('../../../test/rabbit-producer/api/api-to-mq').signHash(app);
+require('../../test/rabbit-producer/api/api-to-mq').signHash(app);
 
 // MQ Endpoints
-require('../mq/transaction-service');
-require('../mq/key-service');
+require('./mq/transaction-service');
+require('./mq/key-service');
+require('./mq/gnosis-service');
 
 // health check
 app.get('/health', (req, res) => {
