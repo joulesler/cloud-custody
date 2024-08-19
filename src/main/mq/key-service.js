@@ -8,7 +8,7 @@ const endpointMapping = {
   generateKey: keyGeneration,
   
   // Backward Compatibility for HSM API
-  gen_xpub:(nw, mkl, d_path) => {
+  gen_xpub:({nw, mkl, d_path}) => {
     const childKey = childKeyGeneration({
       derivationPath: d_path, 
       masterKeyLabel: mkl, 
