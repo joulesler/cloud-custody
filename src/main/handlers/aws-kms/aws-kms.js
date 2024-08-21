@@ -14,6 +14,7 @@ const { SUPPORTED_KMS } = require('../../../lib/enums/keys');
 const ProcessingError = require('../../../lib/errors/processing-error');
 const ValidationError = require('../../../lib/errors/validation-error');
 const CustodyError = require('../../../lib/errors/custody-error');
+const { logger } = require('../../../lib/logger/config');
 
 /**
  *
@@ -81,7 +82,7 @@ async function generateKey(isMasterKey, chainId) {
       xPubKey: x_pub_key, chainCode: chainCodeHex, KeyId, Arn,
     };
   } catch (error) {
-    console.error('Error generating master key:', error);
+    logger.error('Error generating master key:', error);
     if (error instanceof CustodyError) {
       throw error;
     }
@@ -115,17 +116,16 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const childKey = hdkey.derive(derivationPath);
 
   const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 3).join('/')).publicExtendedKey;
-  console.log('accountXpub:', accountXpub);
+  logger.info('accountXpub:', accountXpub);
 
   // TODO check that derivation is correct from the data to the mapping
-  console.log('childKey:', childKey);
-  console.log('childKey.publicKey:', childKey.publicKey);
+  logger.info('childKey.publicKey:', childKey.publicKey);
 
   const { uncompressedPublicKey, address } = publicKeyToEthAddress(childKey.publicKey);
 
   const uncompressedPublicKeyHex = Array.from(uncompressedPublicKey, (byte) => byte.toString(16).padStart(2, '0')).join('');
 
-  console.log('uncompressedPublicKey:', uncompressedPublicKeyHex);
+  logger.info('uncompressedPublicKey:', uncompressedPublicKeyHex);
   // 4. Save key to child key db
   const childKeyDb = await db(childTable.TABLE_NAME).insert(new childTable.ChildKeys({
     is_child: true,
@@ -162,7 +162,7 @@ async function getMasterSeed(masterKeyLabel, xPubKey) {
 
     return { masterSeed, masterSeedDb };
   } catch (err) {
-    console.error('Error signing data:', err);
+    logger.error('Error signing data:', err);
     if (err instanceof CustodyError) {
       throw err;
     }

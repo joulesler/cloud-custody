@@ -2,6 +2,7 @@ const serviceMapping = require('../handlers/transaction-mapping');
 const chainConfig = require('../../lib/db/tables/chain-config');
 const chainEnum = require('../../lib/enums/chains');
 const ApiError = require('../../lib/errors/api-error');
+const { logger } = require('../../lib/logger/config');
 
 /**
  *
@@ -90,7 +91,7 @@ function signTransaction(app) {
 
       res.json({ success: true, signature });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.json({ success: false, error: error.message });
     }
   });
@@ -119,7 +120,7 @@ function signHash(app) {
 
       res.json({ success: true, signature });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.json({ success: false, error: error.message });
     }
   });

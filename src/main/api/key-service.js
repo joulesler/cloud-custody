@@ -2,6 +2,7 @@ const keyEnums = require('../../lib/enums/keys');
 const serviceMapping = require('../handlers/service-mapping');
 const masterSeed = require('../../lib/db/tables/master-seed');
 const ValidationError = require('../../lib/errors/validation-error');
+const { logger } = require('../../lib/logger/config');
 
 
 async function keyGeneration({chainId, isMasterKey, keyType, kmsType}) {
@@ -149,7 +150,7 @@ function generateChildKey(app) {
       res.json({ success: true, keyPair });
     } catch (error) {
       // Send the error response
-      console.log(error);
+      logger.error(error);
       res.json({ success: false, error: error.message });
     }
   });

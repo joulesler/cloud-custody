@@ -1,7 +1,9 @@
 require('dotenv').config();
+
 const amqp = require('amqplib');
-const { createPool } = require('generic-pool');
 const crypto = require('crypto');
+const logger = require('../logger/config');
+const { createPool } = require('generic-pool');
 
 const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost';
 const responseQueue = process.env.RESPONSE_QUEUE_NAME || 'response';
@@ -50,10 +52,10 @@ async function sendToQueue(queueName, message, req_id) {
         const signedMessage = JSON.stringify({ payload: message, signature });
 
         channel.sendToQueue(queueName, Buffer.from(signedMessage, 'utf-8'));
-        console.log(` [x] Sent ${signedMessage} to ${queueName}`);
+        logger.info(` [x] Sent ${signedMessage} to ${queueName}`);
         await channel.close();
     } catch (err) {
-        console.error(`Error sending message to queue ${queueName}:`, err);
+        logger.error(`Error sending message to queue ${queueName}:`, err);
     } finally {
         pool.release(connection);
     }
@@ -64,12 +66,12 @@ async function readFromQueue(queueName, endpointMapping) {
     try {
         const channel = await connection.createChannel();
         await channel.assertQueue(queueName, { durable: false });
-        console.log(` [*] Waiting for messages in ${queueName}. To exit press CTRL+C`);
+        logger.info(` [*] Waiting for messages in ${queueName}. To exit press CTRL+C`);
         channel.consume(queueName, (msg) => {
             if (msg !== null) {
                 (async () => {
                     let messageContent = msg.content.toString('utf-8');
-                    console.log(` [x] Received ${messageContent} from ${queueName}`);
+                    logger.info(` [x] Received ${messageContent} from ${queueName}`);
                     try {
                         messageContent = JSON.parse(messageContent);
                     } catch (e) {
@@ -80,7 +82,7 @@ async function readFromQueue(queueName, endpointMapping) {
                     // Validate the signature
                     const isValid = await validateSignature(signature, payload);
                     if (!isValid) {
-                        console.error('Invalid signature. Discarding message.');
+                        logger.error('Invalid signature. Discarding message.');
                         channel.reject(msg, false); // Reject and discard the message
                         return;
                     }
@@ -96,11 +98,11 @@ async function readFromQueue(queueName, endpointMapping) {
                             sendToQueue(responseQueue, response, req_id);
                             channel.ack(msg); // Acknowledge the message
                         } else {
-                            console.error(`No handler registered for endpoint: ${endpoint}`);
+                            logger.error(`No handler registered for endpoint: ${endpoint}`);
                             channel.reject(msg, false); // Reject and discard the message
                         }
                     } catch (err) {
-                        console.error(`Error processing message: ${err}`);
+                        logger.error(`Error processing message: ${err}`);
                         // Negative acknowledgment and requeue the message
                         // If the message is requeued multiple times, it can be routed to the DLQ
                         sendToQueue(responseQueue, { error: err.message, req_id });
@@ -110,7 +112,7 @@ async function readFromQueue(queueName, endpointMapping) {
             }
         });
     } catch (err) {
-        console.error(`Error reading message from queue ${queueName}:`, err);
+        logger.error(`Error reading message from queue ${queueName}:`, err);
     }
 }
 

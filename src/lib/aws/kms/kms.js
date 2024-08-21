@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const UUID = require('uuid');
 const ProcessingError = require('../../errors/processing-error');
+const logger = require('../../logger/config');
 
 // Singleton instance of AWS KMS client
 let kmsInstance;
@@ -57,7 +58,7 @@ async function generateNonExtractableDataKey(type) {
 
     return { plaintextKey: Plaintext, encryptedKey: CiphertextBlob };
   } catch (err) {
-    console.error('Error generating data key:', err);
+    logger.error('Error generating data key:', err);
     throw err;
   }
 }
@@ -81,7 +82,7 @@ async function createEncryptionKey(keyName) {
 
     return KeyMetadata;
   } catch (err) {
-    console.error('Error creating asymmetric encryption key:', err);
+    logger.error('Error creating asymmetric encryption key:', err);
     throw err;
   }
 }
@@ -103,7 +104,7 @@ async function generateStandalonePrivateKey(keyName, type) {
 
     return KeyMaterial.toString('hex');
   } catch (err) {
-    console.error('Error generating private key:', err);
+    logger.error('Error generating private key:', err);
     throw err;
   }
 }
@@ -123,7 +124,7 @@ async function generateRandomSeed(numberOfBytes = 64) {
     const { Plaintext } = await kms.generateRandom(params).promise();
     return Plaintext.toString('hex');
   } catch (err) {
-    console.error('Error generating random seed:', err);
+    logger.error('Error generating random seed:', err);
     throw new ProcessingError(`Error generating random seed: ${err.message}`);
   }
 }
@@ -143,7 +144,7 @@ async function encryptData(dataToEncrypt, encryptionKeyId) {
     }).promise();
     return encryptedData.CiphertextBlob;
   } catch (err) {
-    console.error('Error encrypting data:', err);
+    logger.error('Error encrypting data:', err);
     throw new ProcessingError(`Error encrypting data: ${err.message}`);
   }
 }
@@ -163,7 +164,7 @@ async function decryptData(dataToDecrypt, encryptionKeyId) {
     }).promise();
     return decryptedData.Plaintext;
   } catch (err) {
-    console.error('Error decrypting data:', err);
+    logger.error('Error decrypting data:', err);
     throw new ProcessingError(`Error decrypting data: ${err.message}`);
   }
 }

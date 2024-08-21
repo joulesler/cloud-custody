@@ -59,7 +59,7 @@ async function readFromQueue(callback) {
     channel.consume(queueName, (msg) => {
       if (msg !== null) {
         const messageContent = msg.content.toString();
-        console.log(` [x] Received ${messageContent} from ${queueName}`);
+        logger.info(` [x] Received ${messageContent} from ${queueName}`);
         try {
             messageContent = JSON.parse(messageContent);
         } catch (e) {

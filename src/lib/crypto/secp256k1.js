@@ -1,6 +1,7 @@
 const secp256k1 = require('secp256k1');
 const ethUtil = require('ethereumjs-util');
 const hexUtils = require('../hex');
+const logger = require('../../lib/logger/config');
 
 function isValidSecp256k1PrivateKey(privateKey) {
   return secp256k1.privateKeyVerify(Buffer.from(privateKey, 'hex'));
@@ -11,14 +12,14 @@ function isValidSecp256k1PrivateKey(privateKey) {
  * @returns {{uncompressedPublicKey: string, address: string}} An object with the uncompressed public key and the address
  */
 function publicKeyToEthAddress(publicKey) {
-  console.log('publicKey:', publicKey);
+  logger.info('publicKey:', publicKey);
 
   if (publicKey.length == 33) {
     // this is the compressed public key
     // decompress it
     publicKey = secp256k1.publicKeyConvert(publicKey, false);
   }
-  console.log('publicKey:', publicKey);
+  logger.info('publicKey:', publicKey);
 
   // Remove the '04' prefix from the public key if it exists
   const pubKeyWithoutPrefix = publicKey[0] == 4 ? publicKey.slice(1) : publicKey;
@@ -66,11 +67,11 @@ function signHash(privateKey, hash, chainId = false, options = {}) {
 
   // Convert the public key to an Ethereum address
   const { address } = publicKeyToEthAddress(publicKey);
-  console.log('verifying address:', address);
+  logger.info('verifying address:', address);
 
   // verify the signature
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
-  console.log('signature valid:', valid);
+  logger.info('signature valid:', valid);
 
   return {
     r, s, v: hexUtils.integerToHexString(v), rawSignature: signature,
@@ -102,11 +103,11 @@ function gnosisSignHash(privateKey, hash, chainId = false, options = {}) {
 
   // Convert the public key to an Ethereum address
   const { address } = publicKeyToEthAddress(publicKey);
-  console.log('verifying address:', address);
+  logger.info('verifying address:', address);
 
   // verify the signature
   const valid = secp256k1.ecdsaVerify(signature, hashBuffer, publicKey);
-  console.log('signature valid:', valid);
+  logger.info('signature valid:', valid);
 
   return {
     r, s, v: hexUtils.integerToHexString(v), rawSignature: signature,

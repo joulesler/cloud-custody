@@ -1,6 +1,6 @@
 const swaggerUi = require('swagger-ui-express');
 const { apiReference } = require('@scalar/express-api-reference');
- 
+
 const fs = require('fs');
 const path = require('path');
 
@@ -53,7 +53,6 @@ const readAndMergeJsonFiles = (dirPath) => {
 
 module.exports = (app) => {
     readAndMergeJsonFiles(dirPath);
-    console.log('specs', mergedSpec);
     app.use('/docs', swaggerUi.serve, swaggerUi.setup(mergedSpec));
     app.use('/docs-scalar', apiReference({ spec: {content: mergedSpec}, theme: 'dark' }));
 };

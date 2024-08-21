@@ -9,6 +9,7 @@ const hexUtils = require('../../../lib/hex');
 const ValidationError = require('../../../lib/errors/validation-error');
 const CustodyError = require('../../../lib/errors/custody-error');
 const ProcessingError = require('../../../lib/errors/processing-error');
+const Logger = require('../../../lib/logger/config');
 
 async function signTransaction(keyLabel, transaction, derivationPath, chainName) {
     const {
@@ -36,7 +37,6 @@ try {
 
         // Get the master seed
         const masterSeedData = await masterSeedInterface.getKeyStoreTypeFromKeyLabel(keyLabel);
-        console.log(masterSeedData)
         if (!masterSeedData
             || !masterSeedData.key_store_type) {
             throw new ValidationError('Invalid key label');
@@ -72,7 +72,6 @@ try {
 
         const unsignedTxElements = Object.values(rlpTx);
         const hexConvertedUnsignedTxElements = unsignedTxElements.map(value =>  {
-            console.log(value)
             const hexValue = Buffer.from(hexUtils.hexStringToByteArray(value));
             return hexValue
         });

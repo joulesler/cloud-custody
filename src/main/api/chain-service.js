@@ -1,7 +1,8 @@
-const { Chains, TABLE_NAME } = require('../../lib/db/tables/chain-config');
 const { db } = require('../../lib/db/db');
+const logger = require('../../lib/logger/config');
 const { KEY_ALGO } = require('../../lib/enums/keys');
 const { TRANSACTION_TYPE } = require('../../lib/enums/chains');
+const { Chains, TABLE_NAME } = require('../../lib/db/tables/chain-config');
 
 // Define the endpoint to onboard a chainId
 /**
@@ -48,7 +49,7 @@ function onboardChain(app) {
       await db(TABLE_NAME).insert(chain);
       res.status(200).json({ message: 'ChainId onboarded successfully' });
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
@@ -73,7 +74,7 @@ function getChainData(app) {
         res.status(200).json(allChainData);
       }
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });

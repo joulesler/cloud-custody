@@ -119,7 +119,7 @@ function gnosisData(app) {
       res.json({ success: true, encodedData: abiEncodeDdata });
     } catch (error) {
       // Send the error response
-      console.log(error);
+      logger.error(error);
       res.json({ success: false, error: error.message });
     }
   });
@@ -166,7 +166,7 @@ function approveHash(app) {
       res.json({ success: true, ...safeSignature });
     } catch (error) {
       // Send the error response
-      console.log(error);
+      logger.error(error);
       let statusCode = 500;
       if (error.status) {
         statusCode = error.status;
