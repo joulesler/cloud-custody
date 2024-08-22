@@ -26,7 +26,9 @@ require('./api/gnosis-service').getTransactionHash(app);
 apiConfig(app);
 
 // Test endpoints
-require('../../test/rabbit-producer/api/api-to-mq').signHash(app);
+if (process.env.NODE_ENV === 'test') {
+  require('../../test/rabbit-producer/api/api-to-mq').signHash(app);
+}
 
 // MQ Endpoints
 require('./mq/transaction-service');

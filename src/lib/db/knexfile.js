@@ -15,7 +15,8 @@ const logger = require('../logger/config');
 
 async function createDatabase() {
   try {
-    await knex.raw(`CREATE DATABASE IF NOT EXISTS${process.env.DB_DATABASE}`);
+    // Use public unless otherwise specified
+    // await knex.raw(`CREATE DATABASE IF NOT EXISTS${process.env.DB_DATABASE}`);
     logger.info('Database created successfully');
   } catch (error) {
     logger.error('Error creating database:', error);
