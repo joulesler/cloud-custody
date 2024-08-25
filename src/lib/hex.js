@@ -1,4 +1,4 @@
-const { BN } = require('ethereumjs-util');
+/* global BigInt */
 const ValidationError = require('./errors/validation-error');
 
 /**
@@ -67,7 +67,7 @@ exports.integerToHexString = (integer, prefix) => {
  */
 exports.hexStringToByteArray = (hexString) => {
   hexString = hexString.replace(/^0x/, '');
-  if (hexString.length == 0) {
+  if (hexString.length === 0) {
     return new Uint8Array();
   }
   return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
@@ -87,6 +87,7 @@ exports.numericalToBigInt = (numerical) => {
   if (typeof numerical === 'bigint' || typeof numerical === 'number') {
     return BigInt(numerical);
   }
+  throw new ValidationError('Invalid input. Must be a number or a string');
 };
 
 exports.isValidHex = (hex) => /^0x[0-9a-fA-F]*$/.test(hex);

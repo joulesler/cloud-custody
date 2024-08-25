@@ -23,4 +23,4 @@ exports.up = async (knex) => {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = (knex) => knex.schema.dropTable(require('../tables/child-keys').TABLE_NAME);
+exports.down = (knex) => knex.schema.dropTable(TABLE_NAME);

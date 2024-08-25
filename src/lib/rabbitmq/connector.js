@@ -89,8 +89,9 @@ async function readFromQueue(queueName, endpointMapping) {
 
           const data = JSON.parse(payload);
           const { req_id } = data;
+          let response = {};
           try {
-            // If using segregated queues, use the queue name as the endpoint
+            // If using segregated queues, use the queue name as the endpoint (e.g. queueName = 'signHash')
             // If using single queue, use the type as the endpoint (e.g. queueName = 'request', type = 'gen_xpub')
             if (endpointMapping[queueName] || endpointMapping[type]) {
               const endpoint = endpointMapping[queueName] ? endpointMapping[queueName] : endpointMapping[type];
@@ -98,7 +99,7 @@ async function readFromQueue(queueName, endpointMapping) {
               sendToQueue(responseQueue, response, req_id);
               channel.ack(msg); // Acknowledge the message
             } else {
-              logger.error(`No handler registered for endpoint: ${endpoint}`);
+              logger.error(`No handler registered for endpoint: ${queueName || type}`);
               channel.reject(msg, false); // Reject and discard the message
             }
           } catch (err) {

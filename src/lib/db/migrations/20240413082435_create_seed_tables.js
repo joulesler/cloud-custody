@@ -2,7 +2,9 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = (knex) => knex.schema.createTable(require('../tables/master-seed').TABLE_NAME, (table) => {
+
+const TABLE_NAME = require('../tables/master-seed').TABLE_NAME;
+exports.up = (knex) => knex.schema.createTable(TABLE_NAME, (table) => {
   table.increments('id').primary();
   table.string('key_store_type').notNullable(); // Mapped from lib/enums/keys.SUPPORTED_KMS
   table.string('encrypted_seed', 1024).notNullable();
@@ -19,4 +21,4 @@ exports.up = (knex) => knex.schema.createTable(require('../tables/master-seed').
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = (knex) => knex.schema.dropTable(require('../tables/master-seed').TABLE_NAME);
+exports.down = (knex) => knex.schema.dropTable(TABLE_NAME);

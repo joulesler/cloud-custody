@@ -4,8 +4,8 @@
  */
 
 const KEY_ENUM = require('../../enums/keys');
-
-exports.up = (knex) => knex.schema.createTable(require('../tables/chain-key-map').TABLE_NAME, (table) => {
+const { TABLE_NAME } = require('../tables/chain-key-map');
+exports.up = (knex) => knex.schema.createTable(TABLE_NAME, (table) => {
   table.increments('id').primary();
   table.integer('chain_id').unsigned().references('id').inTable('chain_config')
     .onDelete('CASCADE');
@@ -20,4 +20,4 @@ exports.up = (knex) => knex.schema.createTable(require('../tables/chain-key-map'
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = (knex) => knex.schema.dropTable(require('../tables/chain-key-map').TABLE_NAME);
+exports.down = (knex) => knex.schema.dropTable(TABLE_NAME);

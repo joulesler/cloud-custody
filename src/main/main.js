@@ -36,7 +36,7 @@ require('./mq/key-service');
 require('./mq/gnosis-service');
 
 // health check
-app.get('/health', (req, res) => {
+app.get('/health', (_, res) => {
   res.json({ status: 'UP' });
 });
 
@@ -52,7 +52,7 @@ migrate().then(() => {
 });
 
 // error handler
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   logger.error(err);
   res.status(500).send('Internal Server Error');
 });

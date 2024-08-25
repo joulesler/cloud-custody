@@ -34,12 +34,12 @@ const mergedSpec = {
 };
 
 // TODO Can make this recursive to read all files in the directory
-const readAndMergeJsonFiles = (dirPath) => {
-  const files = fs.readdirSync(dirPath);
+const readAndMergeJsonFiles = (_dirPath) => {
+  const files = fs.readdirSync(_dirPath);
   const specs = files
     .filter((file) => file.endsWith('doc.js'))
     .forEach((file) => {
-      const filePath = path.join(dirPath, file);
+      const filePath = path.join(_dirPath, file);
       const spec = require(filePath);
 
       Object.keys(spec).forEach((key) => {

@@ -1,6 +1,4 @@
 // take in gnosis fields and create data back
-const { default: EthSafeTransaction } = require('@safe-global/protocol-kit/dist/src/utils/transactions/SafeTransaction');
-const SafeProtocol = require('@safe-global/protocol-kit');
 const Web3 = require('web3');
 const hexUtils = require('../../lib/hex');
 const logger = require('../../lib/logger/config');

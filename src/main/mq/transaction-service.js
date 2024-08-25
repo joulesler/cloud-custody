@@ -10,7 +10,7 @@ const endpointMapping = {
     nw, mkl, d_path, sig_f, address, unsigned_tx_hash,
   }) => {
     // Convert nework name and sig_f (evm, btc etc) to chainName
-    const chainName = '';
+    let chainName = '';
     if (nw === 't') {
       if (sig_f === 'evm') {
         chainName = 'sepolia';

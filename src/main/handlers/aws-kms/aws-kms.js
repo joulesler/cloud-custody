@@ -67,7 +67,7 @@ async function generateKey(isMasterKey, chainId) {
     masterSeedUtf8Array.fill(0);
 
     // 4. Store the encrypted seed in the database
-    const masterKeyDb = new masterTable.masterSeed({
+    const masterKeyDb = new masterTable.MasterSeed({
       key_store_type: SUPPORTED_KMS.AWS_KMS,
       encrypted_seed: encryptedSeedHex,
       encrypting_key_label: KeyId,

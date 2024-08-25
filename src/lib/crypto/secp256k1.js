@@ -14,7 +14,7 @@ function isValidSecp256k1PrivateKey(privateKey) {
 function publicKeyToEthAddress(publicKey) {
   logger.info('publicKey:', publicKey);
 
-  if (publicKey.length == 33) {
+  if (publicKey.length === 33) {
     // this is the compressed public key
     // decompress it
     publicKey = secp256k1.publicKeyConvert(publicKey, false);
@@ -22,7 +22,7 @@ function publicKeyToEthAddress(publicKey) {
   logger.info('publicKey:', publicKey);
 
   // Remove the '04' prefix from the public key if it exists
-  const pubKeyWithoutPrefix = publicKey[0] == 4 ? publicKey.slice(1) : publicKey;
+  const pubKeyWithoutPrefix = publicKey[0] === 4 ? publicKey.slice(1) : publicKey;
 
   // Convert the public key to a Buffer
   const pubKeyBuffer = Buffer.from(pubKeyWithoutPrefix);
@@ -88,6 +88,7 @@ function signHash(privateKey, hash, chainId = false, options = {}) {
  * @returns {r: string, s: string, v: string, rawSignature: Uint8Array}
  */
 function gnosisSignHash(privateKey, hash, chainId = false, options = {}) {
+  logger.info('Chain ID is not used for on-chain transactions, only for off-chain signing: ', chainId);
   const privateKeyBuffer = Buffer.from(hexUtils.removeHexPrefix(privateKey), 'hex');
   const hashBuffer = Buffer.from(hexUtils.removeHexPrefix(hash), 'hex');
   const { signature, recid } = secp256k1.ecdsaSign(hashBuffer, privateKeyBuffer, { noncefn: options.noncefn });

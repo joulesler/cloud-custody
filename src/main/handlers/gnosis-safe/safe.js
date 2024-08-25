@@ -13,6 +13,7 @@ const Operations = {
   DelegateCall: 1,
 };
 
+// eslint-disable-next-line no-unused-vars
 const SAFE_TX_TYPEHASH = '0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d8';
 
 /**

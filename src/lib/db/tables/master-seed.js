@@ -2,7 +2,7 @@ const { db } = require('../db');
 
 const TABLE_NAME = 'master_seed';
 
-class masterSeed {
+class MasterSeed {
   constructor({
     id, key_store_type, encrypted_seed, encrypting_key_label, encrypting_key_algo, x_pub_key, chain_code, key_type,
   }) {
@@ -42,7 +42,7 @@ async function getKeyStoreTypeFromKeyLabel(encrypting_key_label) {
 }
 
 module.exports = {
-  masterSeed,
+  MasterSeed,
   TABLE_NAME,
   getKeyStoreTypeFromSeed,
   getKeyStoreTypeFromPubKey,
