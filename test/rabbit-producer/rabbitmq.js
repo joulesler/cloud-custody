@@ -1,7 +1,7 @@
 require('dotenv').config();
 const amqp = require('amqplib');
-const logger = require('../../src/lib/logger/config');
 const { createPool } = require('generic-pool');
+const logger = require('../../src/lib/logger/config');
 const ProcessingError = require('../../src/lib/errors/processing-error');
 
 const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
@@ -35,7 +35,7 @@ async function sendToQueue(queueName, message) {
   try {
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName, { durable: false });
-    if ('object' === typeof message) {
+    if (typeof message === 'object') {
       message = JSON.stringify(message);
     }
     channel.sendToQueue(queueName, Buffer.from(message));
@@ -61,9 +61,9 @@ async function readFromQueue(callback) {
         const messageContent = msg.content.toString();
         logger.info(` [x] Received ${messageContent} from ${queueName}`);
         try {
-            messageContent = JSON.parse(messageContent);
+          messageContent = JSON.parse(messageContent);
         } catch (e) {
-            // no-op
+          // no-op
         }
         const { payload } = JSON.parse(messageContent);
 

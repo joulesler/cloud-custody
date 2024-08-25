@@ -1,7 +1,6 @@
 require('dotenv').config();
 const { logger } = require('../../../src/lib/logger/config');
 const { sendToQueue } = require('../../../src/lib/rabbitmq/connector');
-module.exports.signHash = signHash;
 
 async function signHash(app) {
   app.post('/transaction/rabbitmq/:endpoint', async (req, res) => {
@@ -21,4 +20,6 @@ async function signHash(app) {
   });
 
   return app;
-};
+}
+
+module.exports.signHash = signHash;

@@ -3,7 +3,8 @@
  * @returns { Promise<void> }
  */
 
-const TABLE_NAME = require('../tables/child-keys').TABLE_NAME;
+const { TABLE_NAME } = require('../tables/child-keys');
+
 exports.up = async (knex) => {
   await knex.schema.createTable(TABLE_NAME, (table) => {
     table.increments('id').primary();

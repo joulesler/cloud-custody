@@ -6,7 +6,9 @@ const { readFromQueue } = require('../../lib/rabbitmq/connector');
 const endpointMapping = {
   signHash: hashSignature,
   signTransaction: transactionSignature,
-  sign: ({nw, mkl, d_path, sig_f, address, unsigned_tx_hash}) => {
+  sign: ({
+    nw, mkl, d_path, sig_f, address, unsigned_tx_hash,
+  }) => {
     // Convert nework name and sig_f (evm, btc etc) to chainName
     const chainName = '';
     if (nw === 't') {
@@ -23,8 +25,8 @@ const endpointMapping = {
       if (sig_f === 'btc') {
         chainName = 'bitcoin_mainnet';
       }
-    } 
-    
+    }
+
     if (!chainName) {
       throw new Error('Invalid Network');
       // option to sign without EIP155 if needed
@@ -39,9 +41,9 @@ const endpointMapping = {
     return {
       signed_tx: signature.rawSignature,
       address,
-    }
-  }
+    };
+  },
 };
 
-Object.keys(endpointMapping).forEach((endpoint) => readFromQueue(endpoint, endpointMapping))
-readFromQueue(process.env.REQUEST_QUEUE_NAME, endpointMapping)
+Object.keys(endpointMapping).forEach((endpoint) => readFromQueue(endpoint, endpointMapping));
+readFromQueue(process.env.REQUEST_QUEUE_NAME, endpointMapping);

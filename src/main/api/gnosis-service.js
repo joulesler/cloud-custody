@@ -11,7 +11,9 @@ const getTransactionHashAbi = require('../../../abi/gnosis/get-transaction-hash.
 
 const web3 = new Web3.Web3();
 
-async function gnosisTransaction({ to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures }) {
+async function gnosisTransaction({
+  to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, signatures,
+}) {
   try {
     if (!to) {
       throw new ValidationError('to address is required');
@@ -71,7 +73,9 @@ async function gnosisApproveHash({ safeTxHash, masterKeyLabel, derivationPath })
   }
 }
 
-async function gnosisGetTransactionHash({ to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce }) {
+async function gnosisGetTransactionHash({
+  to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce,
+}) {
   let abiData;
   try {
     const safeTxGasBN = hexUtils.numericalToBigInt(safeTxGas);
@@ -87,7 +91,6 @@ async function gnosisGetTransactionHash({ to, value, data, operation, safeTxGas,
   }
   return abiData;
 }
-
 
 /**
  * Function to generate gnosis safe transaction data

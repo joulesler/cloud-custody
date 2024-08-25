@@ -4,8 +4,9 @@ const masterSeed = require('../../lib/db/tables/master-seed');
 const ValidationError = require('../../lib/errors/validation-error');
 const { logger } = require('../../lib/logger/config');
 
-
-async function keyGeneration({chainId, isMasterKey, keyType, kmsType}) {
+async function keyGeneration({
+  chainId, isMasterKey, keyType, kmsType,
+}) {
   try {
     // Validate body
     if (!chainId) {
@@ -31,7 +32,7 @@ async function keyGeneration({chainId, isMasterKey, keyType, kmsType}) {
   }
 }
 
-async function childKeyGeneration({derivationPath, masterKeyLabel, xPubKey}) {
+async function childKeyGeneration({ derivationPath, masterKeyLabel, xPubKey }) {
   try {
     if (masterKeyLabel && xPubKey) {
       throw new ValidationError('Only one of masterKeyLabel or xPubKey should be provided');

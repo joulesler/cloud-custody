@@ -6,12 +6,12 @@ const { readFromQueue } = require('../../lib/rabbitmq/connector');
 const endpointMapping = {
   generateChildKey: childKeyGeneration,
   generateKey: keyGeneration,
-  
+
   // Backward Compatibility for HSM API
-  gen_xpub:({nw, mkl, d_path}) => {
+  gen_xpub: ({ nw, mkl, d_path }) => {
     const childKey = childKeyGeneration({
-      derivationPath: d_path, 
-      masterKeyLabel: mkl, 
+      derivationPath: d_path,
+      masterKeyLabel: mkl,
     });
 
     if (nw === 't') {
@@ -21,16 +21,16 @@ const endpointMapping = {
     return {
       hsm_id: process.env.HSM_ID,
       payload: {
-        nw, 
+        nw,
         mkl,
         d_path,
         xpub: childKey.accountXpub,
-      }
-    }
-  }
+      },
+    };
+  },
 };
 
-Object.keys(endpointMapping).forEach((endpoint) => readFromQueue(endpoint, endpointMapping))
+Object.keys(endpointMapping).forEach((endpoint) => readFromQueue(endpoint, endpointMapping));
 
 // Register the services under a consolidated queue
-readFromQueue(process.env.REQUEST_QUEUE_NAME, endpointMapping)
+readFromQueue(process.env.REQUEST_QUEUE_NAME, endpointMapping);

@@ -16,8 +16,8 @@ async function createDatabase() {
   try {
     // Check if the database exists
     const databaseExists = await knex.raw(
-      `SELECT 1 FROM pg_database WHERE datname = ?`,
-      [process.env.DB_DATABASE]
+      'SELECT 1 FROM pg_database WHERE datname = ?',
+      [process.env.DB_DATABASE],
     );
 
     if (databaseExists.rows.length === 0) {

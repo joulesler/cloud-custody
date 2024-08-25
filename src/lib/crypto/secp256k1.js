@@ -1,7 +1,7 @@
 const secp256k1 = require('secp256k1');
 const ethUtil = require('ethereumjs-util');
 const hexUtils = require('../hex');
-const logger = require('../../lib/logger/config');
+const logger = require('../logger/config');
 
 function isValidSecp256k1PrivateKey(privateKey) {
   return secp256k1.privateKeyVerify(Buffer.from(privateKey, 'hex'));
