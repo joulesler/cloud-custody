@@ -103,12 +103,9 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   }
 
   const { masterSeed, masterSeedDb } = await getMasterSeed(masterKeyLabel, xPubKey);
-  // Check the derivation path and masterKeyId does not already exist
-  const existingChildKey = await db(childTable.TABLE_NAME).where({ derivation_path: derivationPath, master_seed_id: masterSeedDb.id }).first();
-
-  if (existingChildKey) {
-    throw new ValidationError('Child key already exists');
-  }
+  
+  // TODO: Return without having to derive the child key if it already exists
+  // const existingChildKey = await db(childTable.TABLE_NAME).where({ derivation_path: derivationPath, master_seed_id: masterSeedDb.id }).first();
 
   // 3. Derive the child key
   const masterSeedUtf8Array = Buffer.from(masterSeed, 'hex');
@@ -118,7 +115,6 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 3).join('/')).publicExtendedKey;
   logger.info('accountXpub:', accountXpub);
 
-  // TODO check that derivation is correct from the data to the mapping
   logger.info('childKey.publicKey:', childKey.publicKey);
 
   const { uncompressedPublicKey, address } = publicKeyToEthAddress(childKey.publicKey);

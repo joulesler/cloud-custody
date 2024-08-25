@@ -8,14 +8,18 @@ const endpointMapping = {
   generateKey: keyGeneration,
 
   // Backward Compatibility for HSM API
-  gen_xpub: ({ nw, mkl, d_path }) => {
-    const childKey = childKeyGeneration({
+  gen_xpub: async ({ nw, mkl, d_path }) => {
+    const result = await childKeyGeneration({
       derivationPath: d_path,
       masterKeyLabel: mkl,
     });
 
+    if (result.success === false) {
+      return { success: false, error: childKey.error };
+    }
+    const { keyPair } = result;
     if (nw === 't') {
-      childKey.accountXpub = childKey.accountXpub.replace('xpub', 'tpub');
+      keyPair.accountXpub = keyPair.accountXpub.replace('xpub', 'tpub');
     }
     // signature, type and req_id handled by queue processor
     return {
@@ -24,7 +28,7 @@ const endpointMapping = {
         nw,
         mkl,
         d_path,
-        xpub: childKey.accountXpub,
+        xpub: keyPair.accountXpub,
       },
     };
   },

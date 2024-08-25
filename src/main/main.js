@@ -22,6 +22,9 @@ require('./api/gnosis-service').gnosisData(app);
 require('./api/gnosis-service').approveHash(app);
 require('./api/gnosis-service').getTransactionHash(app);
 
+// Initialise the MQ Consumer
+require('../lib/rabbitmq/connector').getPool();
+
 // Swagger UI
 apiConfig(app);
 
@@ -49,6 +52,7 @@ migrate().then(() => {
 }).catch((err) => {
   logger.error('Could not setup database, please check db config');
   logger.error(err);
+  process.exit(1);
 });
 
 // error handler

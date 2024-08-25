@@ -2,7 +2,7 @@ const { db } = require('../../lib/db/db');
 const logger = require('../../lib/logger/config');
 const { KEY_ALGO } = require('../../lib/enums/keys');
 const { TRANSACTION_TYPE } = require('../../lib/enums/chains');
-const { Chains, TABLE_NAME } = require('../../lib/db/tables/chain-config');
+const { Chains, TABLE_NAME, getChainByPubId } = require('../../lib/db/tables/chain-config');
 
 // Define the endpoint to onboard a chainId
 /**
@@ -38,6 +38,13 @@ function onboardChain(app) {
 
     if (!KEY_ALGO[key_algo]) {
       res.status(400).json({ message: `Key algo must be of type: ${Object.keys(KEY_ALGO).join(',')}` });
+      return;
+    }
+
+    // Check if the chainId already exists
+    const chainData = await getChainByPubId(public_chain_identifier);
+    if (chainData) {
+      res.status(409).json({ message: 'ChainId already exists' });
       return;
     }
 

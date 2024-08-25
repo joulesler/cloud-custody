@@ -6,7 +6,7 @@ const { readFromQueue } = require('../../lib/rabbitmq/connector');
 const endpointMapping = {
   signHash: hashSignature,
   signTransaction: transactionSignature,
-  sign: ({
+  sign: async ({
     nw, mkl, d_path, sig_f, address, unsigned_tx_hash,
   }) => {
     // Convert nework name and sig_f (evm, btc etc) to chainName
@@ -32,12 +32,17 @@ const endpointMapping = {
       // option to sign without EIP155 if needed
       // chainName = false
     }
-    const signature = hashSignature({
+    const signature = await hashSignature({
       chainName,
       masterKeyLabel: mkl,
       derivationPath: d_path,
       hash: unsigned_tx_hash,
     });
+
+    if (signature.success === false) {
+      return { success: false, error: signature.error };
+    }
+
     return {
       signed_tx: signature.rawSignature,
       address,

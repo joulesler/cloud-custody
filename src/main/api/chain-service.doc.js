@@ -123,7 +123,8 @@ module.exports.chainSpec = {
                     },
                     public_chain_identifier: {
                       type: 'string',
-                      example: 'bitcoin',
+                      description: 'The public identifier of the chain',
+                      example: '11155111',
                     },
                     key_algo: {
                       type: 'string',

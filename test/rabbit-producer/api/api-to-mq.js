@@ -11,7 +11,7 @@ async function signHash(app) {
     }
 
     try {
-      await sendToQueue(queueName, payload);
+      await sendToQueue(queueName, req.body);
       res.status(200).send(`Message sent to queue ${queueName}`);
     } catch (error) {
       logger.error('Error sending message to queue:', error);

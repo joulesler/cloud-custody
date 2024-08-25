@@ -33,6 +33,7 @@ async function keyGeneration({
 }
 
 async function childKeyGeneration({ derivationPath, masterKeyLabel, xPubKey }) {
+  logger.info('Recieved request to generate child key: ', { derivationPath, masterKeyLabel, xPubKey });
   try {
     if (masterKeyLabel && xPubKey) {
       throw new ValidationError('Only one of masterKeyLabel or xPubKey should be provided');
@@ -48,7 +49,7 @@ async function childKeyGeneration({ derivationPath, masterKeyLabel, xPubKey }) {
 
     let keyData;
 
-    if (masterKeyLabel) { keyData = await masterSeed.getKeyStoreTypeFromLabel(masterKeyLabel); }
+    if (masterKeyLabel) { keyData = await masterSeed.getKeyStoreTypeFromKeyLabel(masterKeyLabel); }
     if (xPubKey) { keyData = await masterSeed.getKeyStoreTypeFromPubKey(xPubKey); }
 
     const kmsType = keyData.key_store_type;
@@ -62,6 +63,7 @@ async function childKeyGeneration({ derivationPath, masterKeyLabel, xPubKey }) {
     // Send the response
     return { success: true, keyPair };
   } catch (error) {
+    logger.error('Unable to generate child key: ', error);
     // Send the error response
     return { success: false, error: error.message };
   }
