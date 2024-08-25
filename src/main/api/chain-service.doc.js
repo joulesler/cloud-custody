@@ -14,12 +14,12 @@ module.exports.chainSpec = {
                                     "chain_name": {
                                         "type": "string",
                                         "description": "The name of the chain",
-                                        "example": "BTC"
+                                        "example": "sepolia"
                                     },
                                     "public_chain_identifier": {
                                         "type": "string",
                                         "description": "The public identifier of the chain",
-                                        "example": "bitcoin"
+                                        "example": "11155111"
                                     },
                                     "key_algo": {
                                         "type": "string",

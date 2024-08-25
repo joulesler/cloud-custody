@@ -1,5 +1,4 @@
 require('dotenv').config(); // Load environment variables
-
 const knex = require('knex')({
   client: 'pg',
   connection: {
@@ -7,7 +6,7 @@ const knex = require('knex')({
     port: process.env.DB_PORT,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: 'postgres',
+    database: 'postgres', // Connect to 'postgres' to create other databases
   },
 });
 
@@ -15,13 +14,24 @@ const logger = require('../logger/config');
 
 async function createDatabase() {
   try {
-    // Use public unless otherwise specified
-    // await knex.raw(`CREATE DATABASE IF NOT EXISTS${process.env.DB_DATABASE}`);
-    logger.info('Database created successfully');
+    // Check if the database exists
+    const databaseExists = await knex.raw(
+      `SELECT 1 FROM pg_database WHERE datname = ?`,
+      [process.env.DB_DATABASE]
+    );
+
+    if (databaseExists.rows.length === 0) {
+      // Create the database if it doesn't exist
+      await knex.raw(`CREATE DATABASE ${process.env.DB_DATABASE}`);
+      logger.info(`Database '${process.env.DB_DATABASE}' created successfully`);
+    } else {
+      logger.info(`Database '${process.env.DB_DATABASE}' already exists`);
+    }
   } catch (error) {
     logger.error('Error creating database:', error);
   } finally {
-    knex.destroy();
+    // Destroy the knex instance after the operation
+    await knex.destroy();
   }
 }
 
@@ -33,7 +43,7 @@ module.exports = {
       port: process.env.DB_PORT,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      database: process.env.DB_DATABASE || 'postgres', // Default to 'postgres' if DB_DATABASE is not set
     },
     pool: {
       min: 2,
@@ -43,8 +53,10 @@ module.exports = {
       directory: `${__dirname}/migrations`,
       tableName: 'knex_migrations',
     },
+    async afterCreate(conn, done) {
+      await conn.query('SET search_path TO public'); // Ensure the default schema is set to 'public'
+      done();
+    },
   },
   createDatabase,
 };
-
-createDatabase();

@@ -5,6 +5,9 @@ const knexConfig = require('./knexfile');
 const db = knex(knexConfig.development);
 
 async function migrate() {
+  console.log('Running migrations');
+  console.log('Creating database');
+  await knexConfig.createDatabase();
   // Run migrations
   await db.migrate.latest();
 }
