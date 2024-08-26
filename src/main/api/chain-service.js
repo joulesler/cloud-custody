@@ -69,7 +69,7 @@ function getChainData(app) {
     try {
       // Retrieve the chain data from the 'chain_config' table
       if (chainId) {
-        const chainData = await db(TABLE_NAME).where({ chain_id: chainId }).first();
+        const chainData = await db(TABLE_NAME).where({ public_chain_identifier: chainId }).first();
 
         if (chainData) {
           res.status(200).json(chainData);

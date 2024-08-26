@@ -11,33 +11,33 @@ module.exports.chainSpec = {
               schema: {
                 type: 'object',
                 properties: {
-                  chain_name: {
+                  chainName: {
                     type: 'string',
                     description: 'The name of the chain',
                     example: 'sepolia',
                   },
-                  public_chain_identifier: {
+                  publicChainIdentifier: {
                     type: 'string',
                     description: 'The public identifier of the chain',
                     example: '11155111',
                   },
-                  key_algo: {
+                  keyAlgo: {
                     type: 'string',
                     description: 'The key algorithm used',
                     example: 'SECP256K1',
                   },
-                  seed_length: {
+                  seedLength: {
                     type: 'integer',
                     description: 'The length of the seed in bytes',
                     example: 64,
                   },
-                  transaction_type: {
+                  transactionType: {
                     type: 'string',
                     description: 'The type of transaction',
                     example: 'EVM',
                   },
                 },
-                required: ['chain_name', 'public_chain_identifier', 'key_algo', 'transaction_type'],
+                required: ['chainName', 'publicChainIdentifier', 'keyAlgo', 'seedLength', 'transactionType'],
               },
             },
           },
