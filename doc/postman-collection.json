@@ -1,0 +1,465 @@
+{
+	"info": {
+		"_postman_id": "931221a8-74d6-4561-bf2d-bc9560f1ec56",
+		"name": "Cloud-Custody",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6546781",
+		"_collection_link": "https://planetary-satellite-894878.postman.co/workspace/matching-engine~1893789d-558c-429b-8cff-093642d20ba1/collection/6546781-931221a8-74d6-4561-bf2d-bc9560f1ec56?action=share&source=collection_link&creator=6546781"
+	},
+	"item": [
+		{
+			"name": "Queue",
+			"item": [
+				{
+					"name": "Single Request Queue",
+					"item": [
+						{
+							"name": "Derive Child Key",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"type\": \"gen_xpub\",\r\n    \"payload\": {\r\n        \"mkl\": \"63b4f420-cd7c-454f-975b-45ee4e98b5d5\",\r\n        \"nw\" : \"t\",\r\n        \"xPubKey\" : \"xpub661MyMwAqRbcGsUq2au6ZGz1vUvP8KxVm4JmnqrsKhjUdMMtL47PiaF3oFJsh1eTfVUZTawFrXv9s2LnLMEndodXhoihmYHpcBHLAcDtxuB\",\r\n        \"d_path\" : \"m/44'/60'/1'/1/1\"\r\n    }   \r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/transaction/rabbitmq/request",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"transaction",
+										"rabbitmq",
+										"request"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Sign Hash",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"type\": \"sign\",\r\n    \"payload\": {\r\n        \"mkl\": \"63b4f420-cd7c-454f-975b-45ee4e98b5d5\",\r\n        \"nw\" : \"t\",\r\n        \"d_path\" : \"m/44'/60'/1'\",\r\n        \"unsigned_tx_hash\": \"0x30194b928168246ca9227506db02ef4991dca1871f7f6d3ed4490d3e2727b498\",\r\n        \"address\" : \"0xf2d0f226282fe78c3aeb2e499d3a6f38c2421266\",\r\n        \"sig_f\": \"evm\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/transaction/rabbitmq/request",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"transaction",
+										"rabbitmq",
+										"request"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Sign Hash",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"txn_id\" : \"{{$randomUUID}}\",\r\n        \"masterKeyLabel\": \"3fe6b156-5756-404c-ab54-675516cebb3b\",\r\n        \"chainName\": \"sepolia\",\r\n        \"derivationPath\": \"m/44'/60'/1'/0/1\",\r\n        \"hash\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/transaction/rabbitmq/signHash",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"rabbitmq",
+								"signHash"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"masterKeyLabel\": \"3fe6b156-5756-404c-ab54-675516cebb3b\",\r\n        \"chainName\": \"sepolia\",\r\n        \"derivationPath\": \"m/44'/60'/1'/0/1\",\r\n        \"transaction\": {\r\n            \"gas\": 500000,\r\n            \"gasPrice\": 80000000000,\r\n            \"nonce\": 1,\r\n            \"to\": \"0x487CFbd0774443a8CE95A253e96697b1304dD9D7\",\r\n            \"value\": 0,\r\n            \"data\": \"0x6a76120200000000000000000000000017997e53c1a5066c463e5f0530414cb859da06950000000000000000000000000000000000000000000000000011c37937e08000000000000000000000000000000000000000000000000000000000000000014000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012a05f200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000082ad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1bcf5d20ac945692104a4335d81c19adf81b896608cc5c4209aaae8c5c9b0a98ff3f9d26c75c59820df49867fe5f8b91601e3865d312530c11eedbe4ce413c1c681b000000000000000000000000000000000000000000000000000000000000\"\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/transaction/rabbitmq/signTransaction",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"rabbitmq",
+								"signTransaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate MPK",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"txn_id\" : {{$randomUUID}},\r\n        \"chainId\" : \"bitcoin\",\r\n        \"isMasterKey\" : true,\r\n        \"kmsType\" : \"AWS_KMS\",\r\n        \"keyType\" : \"SEED\"\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/transaction/rabbitmq/generateKey",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"rabbitmq",
+								"generateKey"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Derive Child Key",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"payload\": {\r\n        \"xPubKey\" : \"xpub661MyMwAqRbcGnVuyruBa6FmjNjbYrSYKMfReu6UDCRh4RrW82JaiZJ2TwH3vCcjL787BYD2KxXyxfh162uN8mcpCRFDwpycguTET6EY9jp\",\r\n        \"derivationPath\" : \"m/44'/60'/1'/0/1\"\r\n    }   \r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/transaction/rabbitmq/generateChildKey",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"transaction",
+								"rabbitmq",
+								"generateChildKey"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Gnosis",
+			"item": [
+				{
+					"name": "Gnosis Approve Hash",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"safeTxHash\": \"0x367476b3a1c6ab5d1fa10b103f2ae0658dc7b572f064659e7ca8a97546368427\",\r\n    \"masterKeyLabel\": \"3fe6b156-5756-404c-ab54-675516cebb3b\",\r\n    \"derivationPath\": \"m/44'/60'/1'/0/1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/gnosis/approveHash",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"gnosis",
+								"approveHash"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gnosis Add Signature",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"ethSafeTransaction\": {\r\n        \"to\": \"0x17997E53C1a5066C463e5F0530414cB859dA0695\",\r\n        \"value\": \"0x11c37937e08000\",\r\n        \"data\": \"0x\",\r\n        \"operation\": 0,\r\n        \"baseGas\": 0,\r\n        \"gasPrice\": 0,\r\n        \"gasToken\": \"0x0000000000000000000000000000000000000000\",\r\n        \"refundReceiver\": \"0x0000000000000000000000000000000000000000\",\r\n        \"nonce\": 0,\r\n        \"safeTxGas\": 0,\r\n        \"signatures\": {\r\n            \"0xa3c0318941267ec2c62a23aa711ebecc5d677263\": {\r\n                \"signer\": \"0xa3c0318941267ec2C62A23aa711ebECC5D677263\",\r\n                \"data\": \"0xad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1b\"\r\n            }\r\n        }\r\n    },\r\n    \"ethSignSignature\": {\r\n        \"signer\": \"0xed1e4bcd07120660cd2cae9d959fd924b1bb7449\",\r\n        \"data\": \"0xcf5d20ac945692104a4335d81c19adf81b896608cc5c4209aaae8c5c9b0a98ff3f9d26c75c59820df49867fe5f8b91601e3865d312530c11eedbe4ce413c1c681b\",\r\n        \"isContractSignature\": false\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/gnosis/addSignature",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"gnosis",
+								"addSignature"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gnosis Encode execTransaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"to\": \"0x17997E53C1a5066C463e5F0530414cB859dA0695\",\r\n    \"value\": \"0x11c37937e08000\",\r\n    \"data\": \"0x\",\r\n    \"operation\": 0,\r\n    \"baseGas\": 0,\r\n    \"gasPrice\": 0,\r\n    \"gasToken\": \"0x0000000000000000000000000000000000000000\",\r\n    \"refundReceiver\": \"0x0000000000000000000000000000000000000000\",\r\n    \"nonce\": 0,\r\n    \"safeTxGas\": 0,\r\n    \"signatures\": {\r\n        \"0xa3c0318941267ec2c62a23aa711ebecc5d677263\": {\r\n            \"signer\": \"0xa3c0318941267ec2C62A23aa711ebECC5D677263\",\r\n            \"data\": \"0xad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1b\"\r\n        },\r\n        \"0xed1e4bcd07120660cd2cae9d959fd924b1bb7449\": {\r\n            \"signer\": \"0xed1e4bcd07120660cd2cae9d959fd924b1bb7449\",\r\n            \"data\": \"0x10c0f8969cce5eed62e9ad140d965bbb1e3d2426b1b9b72ba9a05c159fb9e3a17c4cacc34e01eda3d38564e882a143209eda284ba33c30c41eaa80e8fc16a6ae1b\",\r\n            \"isContractSignature\": false\r\n        }\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/gnosis/execTransaction",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"gnosis",
+								"execTransaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Gnosis Get TxHash",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"to\": \"0x17997E53C1a5066C463e5F0530414cB859dA0695\",\r\n    \"value\": \"0x11c37937e08000\",\r\n    \"data\": \"0x\",\r\n    \"operation\": 0,\r\n    \"baseGas\": 0,\r\n    \"gasPrice\": 0,\r\n    \"gasToken\": \"0x0000000000000000000000000000000000000000\",\r\n    \"refundReceiver\": \"0x0000000000000000000000000000000000000000\",\r\n    \"nonce\": 0,\r\n    \"safeTxGas\": 0\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/gnosis/getHashAbi",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"gnosis",
+								"getHashAbi"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Onboard Chain",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n      \"chainName\": \"goerli\",\r\n      \"publicChainIdentifier\": \"5\",\r\n      \"keyAlgo\": \"SECP256K1\",\r\n      \"seedLength\": 64,\r\n      \"transactionType\": \"EVM\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/chain/onboard",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"chain",
+						"onboard"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GenerateSeed",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"chainId\" : \"11155111\",\r\n    \"isMasterKey\" : true,\r\n    \"kmsType\" : \"AWS_KMS\",\r\n    \"keyType\" : \"SEED\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/key/generate",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"key",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Child Key",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"xPubKey\" : \"xpub661MyMwAqRbcGnVuyruBa6FmjNjbYrSYKMfReu6UDCRh4RrW82JaiZJ2TwH3vCcjL787BYD2KxXyxfh162uN8mcpCRFDwpycguTET6EY9jp\",\r\n    \"derivationPath\" : \"m/44'/60'/1'/0/1\"\r\n}   ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/key/child",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"key",
+						"child"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sign Transaction",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"masterKeyLabel\": \"3fe6b156-5756-404c-ab54-675516cebb3b\",\r\n    \"chainName\" : \"sepolia\",\r\n    \"derivationPath\": \"m/44'/60'/1'/0/1\",\r\n    \"transaction\": {\r\n        \"gas\": 120000,\r\n        \"gasPrice\": 80000000000,\r\n        \"nonce\": 2,\r\n        \"to\": \"0x487CFbd0774443a8CE95A253e96697b1304dD9D7\",\r\n        \"value\": 0,\r\n        \"data\": \"0x6a76120200000000000000000000000017997e53c1a5066c463e5f0530414cb859da06950000000000000000000000000000000000000000000000000011c37937e080000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000082ad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1b10c0f8969cce5eed62e9ad140d965bbb1e3d2426b1b9b72ba9a05c159fb9e3a17c4cacc34e01eda3d38564e882a143209eda284ba33c30c41eaa80e8fc16a6ae1b000000000000000000000000000000000000000000000000000000000000\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/transaction/sign",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"transaction",
+						"sign"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Sign Hash",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"masterKeyLabel\": \"3fe6b156-5756-404c-ab54-675516cebb3b\",\r\n    \"chainName\" : \"sepolia\",\r\n    \"derivationPath\": \"m/44'/60'/1'/0/1\",\r\n    \"hash\": \"0x30194b928168246ca9227506db02ef4991dca1871f7f6d3ed4490d3e2727b498\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/transaction/signHash",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"transaction",
+						"signHash"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Derive Child Key",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"payload\": {\r\n        \"xPubKey\" : \"xpub661MyMwAqRbcGnVuyruBa6FmjNjbYrSYKMfReu6UDCRh4RrW82JaiZJ2TwH3vCcjL787BYD2KxXyxfh162uN8mcpCRFDwpycguTET6EY9jp\",\r\n        \"derivationPath\" : \"m/44'/60'/1'/0/1\"\r\n    }   \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/transaction/rabbitmq/generateChildKey",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"transaction",
+						"rabbitmq",
+						"generateChildKey"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

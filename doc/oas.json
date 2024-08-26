@@ -1,0 +1,1084 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Signing API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/chain/onboard": {
+            "post": {
+                "tags": [
+                    "Chain Service"
+                ],
+                "summary": "Onboard a new chain",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "chainName": {
+                                        "type": "string",
+                                        "description": "The name of the chain",
+                                        "example": "sepolia"
+                                    },
+                                    "publicChainIdentifier": {
+                                        "type": "string",
+                                        "description": "The public identifier of the chain",
+                                        "example": "11155111"
+                                    },
+                                    "keyAlgo": {
+                                        "type": "string",
+                                        "description": "The key algorithm used",
+                                        "example": "SECP256K1"
+                                    },
+                                    "seedLength": {
+                                        "type": "integer",
+                                        "description": "The length of the seed in bytes",
+                                        "example": 64
+                                    },
+                                    "transactionType": {
+                                        "type": "string",
+                                        "description": "The type of transaction",
+                                        "example": "EVM"
+                                    }
+                                },
+                                "required": [
+                                    "chainName",
+                                    "publicChainIdentifier",
+                                    "keyAlgo",
+                                    "seedLength",
+                                    "transactionType"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Chain onboarded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "ChainId onboarded successfully"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid request body"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/chain/{chainId}": {
+            "get": {
+                "tags": [
+                    "Chain Service"
+                ],
+                "summary": "Get chain data by chainId",
+                "parameters": [
+                    {
+                        "name": "chainId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "The ID of the chain"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Chain data retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "chain_name": {
+                                            "type": "string",
+                                            "example": "BTC"
+                                        },
+                                        "public_chain_identifier": {
+                                            "type": "string",
+                                            "description": "The public identifier of the chain",
+                                            "example": "11155111"
+                                        },
+                                        "key_algo": {
+                                            "type": "string",
+                                            "example": "SECP256K1"
+                                        },
+                                        "seed_length": {
+                                            "type": "integer",
+                                            "example": 64
+                                        },
+                                        "transaction_type": {
+                                            "type": "string",
+                                            "example": "EVM"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Chain data not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Chain data not found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Internal server error"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gnosis/approveHash": {
+            "post": {
+                "tags": [
+                    "Gnosis Service"
+                ],
+                "summary": "Approve a hash for a Gnosis Safe transaction",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "safeTxHash": {
+                                        "type": "string",
+                                        "description": "The hash of the transaction to approve",
+                                        "example": "0x..."
+                                    },
+                                    "masterKeyLabel": {
+                                        "type": "string",
+                                        "description": "The label of the master key",
+                                        "example": "3fe6b156-5756-404c-ab54-675516cebb3b"
+                                    },
+                                    "derivationPath": {
+                                        "type": "string",
+                                        "description": "The derivation path for the key",
+                                        "example": "m/44'/60'/0'/0/0"
+                                    }
+                                },
+                                "required": [
+                                    "safeTxHash",
+                                    "masterKeyLabel",
+                                    "derivationPath"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Hash approved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "address": {
+                                            "type": "string",
+                                            "example": "0x...",
+                                            "description": "The address of the signer"
+                                        },
+                                        "signature": {
+                                            "type": "object",
+                                            "description": "The signature object returned by the safe",
+                                            "example": {
+                                                "signer": "0xed1e4bcd07120660cd2cae9d959fd924b1bb7449",
+                                                "data": "0xa979a8fa0dfbc05e8c47afe4631e6414f565f4a9ed99bbf7b60208ea01857498416a1a18aacfcb24d2712926c68cc015c95adf50393d47560c45babd8d1864db1c",
+                                                "isContractSignature": false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gnosis/getHashAbi": {
+            "post": {
+                "tags": [
+                    "Gnosis Service"
+                ],
+                "summary": "Get the ABI-encoded transaction hash",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "to": {
+                                        "type": "string",
+                                        "description": "The recipient address",
+                                        "example": "0x..."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "The value to be transferred",
+                                        "example": "1000000000000000000"
+                                    },
+                                    "data": {
+                                        "type": "string",
+                                        "description": "The data payload",
+                                        "example": "0x..."
+                                    },
+                                    "operation": {
+                                        "type": "integer",
+                                        "description": "The operation type",
+                                        "example": 0
+                                    },
+                                    "safeTxGas": {
+                                        "type": "string",
+                                        "description": "The gas limit for the safe transaction",
+                                        "example": "21000"
+                                    },
+                                    "baseGas": {
+                                        "type": "string",
+                                        "description": "The base gas limit",
+                                        "example": "21000"
+                                    },
+                                    "gasPrice": {
+                                        "type": "string",
+                                        "description": "The gas price",
+                                        "example": "20000000000"
+                                    },
+                                    "gasToken": {
+                                        "type": "string",
+                                        "description": "The token used to pay for gas",
+                                        "example": "0x..."
+                                    },
+                                    "refundReceiver": {
+                                        "type": "string",
+                                        "description": "The address to receive any gas refund",
+                                        "example": "0x..."
+                                    },
+                                    "nonce": {
+                                        "type": "string",
+                                        "description": "The transaction nonce",
+                                        "example": "1"
+                                    }
+                                },
+                                "required": [
+                                    "to",
+                                    "value",
+                                    "data",
+                                    "operation",
+                                    "safeTxGas",
+                                    "baseGas",
+                                    "gasPrice",
+                                    "gasToken",
+                                    "refundReceiver",
+                                    "nonce"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ABI-encoded transaction hash",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "0x..."
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gnosis/addSignature": {
+            "post": {
+                "tags": [
+                    "Gnosis Service"
+                ],
+                "summary": "Add a signature to a Gnosis Safe transaction",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "ethSafeTransaction": {
+                                        "type": "object",
+                                        "description": "The EthSafeTransaction object",
+                                        "example": {
+                                            "to": "0x...",
+                                            "value": "1000000000000000000",
+                                            "data": "0x...",
+                                            "operation": 0,
+                                            "safeTxGas": "21000",
+                                            "baseGas": "21000",
+                                            "gasPrice": "20000000000",
+                                            "gasToken": "0x...",
+                                            "refundReceiver": "0x...",
+                                            "nonce": 1
+                                        }
+                                    },
+                                    "ethSignSignature": {
+                                        "type": "object",
+                                        "description": "The EthSafeSignature object from SafeProtocol",
+                                        "example": {
+                                            "signer": "0x...",
+                                            "data": "0x..."
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "ethSafeTransaction",
+                                    "ethSignSignature"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Signature added successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "safeTransaction": {
+                                            "type": "object",
+                                            "description": "The updated SafeTransaction object",
+                                            "example": {
+                                                "to": "0x...",
+                                                "value": "1000000000000000000",
+                                                "data": "0x...",
+                                                "operation": 0,
+                                                "safeTxGas": "21000",
+                                                "baseGas": "21000",
+                                                "gasPrice": "20000000000",
+                                                "gasToken": "0x...",
+                                                "refundReceiver": "0x...",
+                                                "nonce": 1,
+                                                "signatures": [
+                                                    {
+                                                        "signer": "0x...",
+                                                        "data": "0x..."
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/gnosis/execTransaction": {
+            "post": {
+                "tags": [
+                    "Gnosis Service"
+                ],
+                "summary": "Execute a Gnosis Safe transaction",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "to": {
+                                        "type": "string",
+                                        "description": "The address to send the transaction to",
+                                        "example": "0x..."
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "description": "The value of the transaction",
+                                        "example": "1000000000000000000"
+                                    },
+                                    "data": {
+                                        "type": "string",
+                                        "description": "The data to send with the transaction",
+                                        "example": "0x..."
+                                    },
+                                    "operation": {
+                                        "type": "integer",
+                                        "description": "The operation type (0 for Call, 1 for DelegateCall)",
+                                        "example": 0
+                                    },
+                                    "safeTxGas": {
+                                        "type": "string",
+                                        "description": "The gas limit for the transaction",
+                                        "example": "21000"
+                                    },
+                                    "baseGas": {
+                                        "type": "string",
+                                        "description": "The base gas for the transaction",
+                                        "example": "21000"
+                                    },
+                                    "gasPrice": {
+                                        "type": "string",
+                                        "description": "The gas price for the transaction",
+                                        "example": "20000000000"
+                                    },
+                                    "gasToken": {
+                                        "type": "string",
+                                        "description": "The token to use for gas payment",
+                                        "example": "0x..."
+                                    },
+                                    "refundReceiver": {
+                                        "type": "string",
+                                        "description": "The address to receive the gas refund",
+                                        "example": "0x..."
+                                    },
+                                    "signatures": {
+                                        "type": "string",
+                                        "description": "The signatures for the transaction",
+                                        "example": "0x..."
+                                    }
+                                },
+                                "required": [
+                                    "to",
+                                    "value",
+                                    "operation",
+                                    "gasPrice"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction executed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "encodedData": {
+                                            "type": "string",
+                                            "example": "0x..."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Validation error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/key/generate": {
+            "post": {
+                "tags": [
+                    "Key Service"
+                ],
+                "summary": "Generate a master key pair for a chain",
+                "description": "This endpoint generates a master key pair for a chain. Each key has a corresponding key stored on the AWS KMS and the encrypted seed is stored in the database.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "chainId": {
+                                        "type": "string",
+                                        "description": "The chain id for which the master key pair is to be generated",
+                                        "example": "bitcoin"
+                                    },
+                                    "isMasterKey": {
+                                        "type": "boolean",
+                                        "description": "Flag indicating if the key is a master key",
+                                        "example": true
+                                    },
+                                    "keyType": {
+                                        "type": "string",
+                                        "enum": [
+                                            "SEED",
+                                            "KEY_LABEL"
+                                        ],
+                                        "description": "The type of the key",
+                                        "example": "SEED"
+                                    },
+                                    "kmsType": {
+                                        "type": "string",
+                                        "enum": [
+                                            "AWS_KMS"
+                                        ],
+                                        "description": "The type of the KMS to be used (awsKms, localKms, cloudHsm, utimaco)",
+                                        "example": "awsKms"
+                                    }
+                                },
+                                "required": [
+                                    "chainId",
+                                    "keyType",
+                                    "kmsType"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Master key pair generated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "keyPair": {
+                                            "type": "object",
+                                            "description": "The generated key pair",
+                                            "example": {
+                                                "xPubKey": "xpub661MyMwAqRbcGfXdb8cS9haeoNSPWvFPpobVe3Zp3kBtmLvP86TER6gHMCkN96SGfwbwJZurC5vXGBJFkoZwAfPRCAAumVKjDgorZZfWM4Y",
+                                                "chainCode": "d52b68bf88beadb38a2c410275ce9173c6892438862bed53e80fba5b96539379",
+                                                "KeyId": "aa7d3913-ae8d-48bb-9fee-022ad6ff37ae",
+                                                "Arn": "arn:aws:kms:ap-southeast-1:591687752526:key/aa7d3913-ae8d-48bb-9fee-022ad6ff37ae"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "chainId is required"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal server error message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/key/child": {
+            "post": {
+                "tags": [
+                    "Key Service"
+                ],
+                "summary": "Generate a child key from a master key",
+                "description": "This endpoint generates a key from a master key using the provided derivation path and either a master key label or an extended public key (xPubKey).",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "derivationPath": {
+                                        "type": "string",
+                                        "description": "The derivation path for the child key",
+                                        "example": "m/44'/60'/0'/0/0"
+                                    },
+                                    "masterKeyLabel": {
+                                        "type": "string",
+                                        "description": "The label of the master key",
+                                        "example": "master-key-1"
+                                    },
+                                    "xPubKey": {
+                                        "type": "string",
+                                        "description": "The extended public key"
+                                    }
+                                },
+                                "required": [
+                                    "derivationPath"
+                                ],
+                                "oneOf": [
+                                    {
+                                        "required": [
+                                            "masterKeyLabel"
+                                        ]
+                                    },
+                                    {
+                                        "required": [
+                                            "xPubKey"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "keyPair": {
+                                            "type": "object",
+                                            "description": "The generated key pair",
+                                            "example": {
+                                                "publicKey": "0434d3ac2535ccde15bbf3aba4a01d597481f4e36a10485a6af31cc0892ee64a6002db2a41f26466629e880942ae818f2a7ae9aa9f488cde8cc2cc2dd20b75edee",
+                                                "address": "0x239ef41a40eb5eb8b9f0ab67205e1c5f85492ccb",
+                                                "accountXpub": "xpub6AYh1H4o5nWvoa68yNS1WkdSjtWKfsFDyNAGieASFngs9MxY8eDjMYUCLHumSbPg3SQdrtrZEbrH3p79iVDJjxMXWiVCEJ1qR9FxHmfkfKG"
+                                            }
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "description": "Error message if the request failed",
+                                            "example": "Child key already exists"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/sign": {
+            "post": {
+                "tags": [
+                    "Transaction Service"
+                ],
+                "summary": "Sign a transaction",
+                "description": "This endpoint signs a transaction using the provided master key label, chain name, derivation path, and transaction data.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "masterKeyLabel": {
+                                        "type": "string",
+                                        "description": "The label of the master key",
+                                        "example": "master-key-1"
+                                    },
+                                    "chainName": {
+                                        "type": "string",
+                                        "description": "The name of the blockchain",
+                                        "example": "ethereum"
+                                    },
+                                    "derivationPath": {
+                                        "type": "string",
+                                        "description": "The derivation path for the key",
+                                        "example": "m/44'/60'/0'/0/0"
+                                    },
+                                    "transaction": {
+                                        "type": "object",
+                                        "description": "The transaction data to be signed"
+                                    }
+                                },
+                                "required": [
+                                    "masterKeyLabel",
+                                    "chainName",
+                                    "transaction"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "signature": {
+                                            "type": "object",
+                                            "description": "The generated transaction with the signature",
+                                            "example": {
+                                                "transaction": {
+                                                    "nonce": "02",
+                                                    "gasPrice": "12a05f2000",
+                                                    "gas": "01d4c0",
+                                                    "to": "0x487CFbd0774443a8CE95A253e96697b1304dD9D7",
+                                                    "value": "",
+                                                    "data": "0x6a76120200000000000000000000000017997e53c1a5066c463e5f0530414cb859da06950000000000000000000000000000000000000000000000000011c37937e080000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000082ad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1b10c0f8969cce5eed62e9ad140d965bbb1e3d2426b1b9b72ba9a05c159fb9e3a17c4cacc34e01eda3d38564e882a143209eda284ba33c30c41eaa80e8fc16a6ae1b000000000000000000000000000000000000000000000000000000000000",
+                                                    "v": "01546d72",
+                                                    "r": "0x5e4b8fcac952371a05cb25c7542d0f0544d43c2cf2eec31b7c5246823d8345b8",
+                                                    "s": "0x39415bed60166f5d0e389d1b269313b879187a383c493e1da9bd016ae40eb735"
+                                                },
+                                                "txForBroadcast": "0xf9028f028512a05f20008301d4c094487cfbd0774443a8ce95a253e96697b1304dd9d780b902246a76120200000000000000000000000017997e53c1a5066c463e5f0530414cb859da06950000000000000000000000000000000000000000000000000011c37937e080000000000000000000000000000000000000000000000000000000000000000140000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000082ad5cc03fe76baf0d07b2d9e95ac6745d00a6e6d9f2d233bc2be28b899e061e3f35e2322f7b64263469382c629699127493546da067dbbedec452b47350a0920b1b10c0f8969cce5eed62e9ad140d965bbb1e3d2426b1b9b72ba9a05c159fb9e3a17c4cacc34e01eda3d38564e882a143209eda284ba33c30c41eaa80e8fc16a6ae1b0000000000000000000000000000000000000000000000000000000000008401546d72a05e4b8fcac952371a05cb25c7542d0f0544d43c2cf2eec31b7c5246823d8345b8a039415bed60166f5d0e389d1b269313b879187a383c493e1da9bd016ae40eb735",
+                                                "signedTxHash": "0x5c7695d0f6a43baae91743599e18287d89acf34d844fd3195908d88e82f43d2c"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error signing data: Invalid child index"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/transaction/signHash": {
+            "post": {
+                "tags": [
+                    "Transaction Service"
+                ],
+                "summary": "Sign a hash",
+                "description": "This endpoint signs a hash using the provided master key label, chain name, derivation path, and hash data.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "masterKeyLabel": {
+                                        "type": "string",
+                                        "description": "The label of the master key",
+                                        "example": "master-key-1"
+                                    },
+                                    "chainName": {
+                                        "type": "string",
+                                        "description": "The name of the blockchain",
+                                        "example": "ethereum"
+                                    },
+                                    "derivationPath": {
+                                        "type": "string",
+                                        "description": "The derivation path for the key",
+                                        "example": "m/44'/60'/0'/0/0"
+                                    },
+                                    "hash": {
+                                        "type": "string",
+                                        "description": "The hash to be signed"
+                                    }
+                                },
+                                "required": [
+                                    "masterKeyLabel",
+                                    "chainName",
+                                    "hash"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "signature": {
+                                            "type": "object",
+                                            "example": {
+                                                "r": "0xda2d46152f9a3660c45ddfd6d69f7c8e8fb210ac9512421bf2e8f91689374a98",
+                                                "s": "0x77b0488848107c0c6963f9339715df40c455dc30202038a5419c2da4df77a254",
+                                                "v": "01546d71",
+                                                "signedHash": "0x30194b928168246ca9227506db02ef4991dca1871f7f6d3ed4490d3e2727b498",
+                                                "rawSignature": "0xda2d46152f9a3660c45ddfd6d69f7c8e8fb210ac9512421bf2e8f91689374a9877b0488848107c0c6963f9339715df40c455dc30202038a5419c2da4df77a254",
+                                                "address": "0xed1e4bcd07120660cd2cae9d959fd924b1bb7449"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Error signing data: Invalid child index"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Chain Service",
+            "description": "Endpoints related to blockchain chain services onboarding and update."
+        },
+        {
+            "name": "Gnosis Service",
+            "description": "Endpoints related to Gnosis services, including execTransaction, and signature payload generation."
+        },
+        {
+            "name": "Key Service",
+            "description": "Endpoints related to key management services, including generating child keys from master seed."
+        },
+        {
+            "name": "Transaction Service",
+            "description": "Endpoints related to transaction services, generic signing for chains using EIP155."
+        }
+    ]
+}
