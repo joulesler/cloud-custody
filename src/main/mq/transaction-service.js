@@ -44,10 +44,13 @@ const endpointMapping = {
     }
 
     return {
-      signed_tx: signature.rawSignature,
-      address,
+      hsm_id: process.env.HSM_ID,
+      payload: {
+        signed_tx: signature.rawSignature,
+        address,
+      }
     };
-  },
+  }
 };
 
 Object.keys(endpointMapping).forEach((endpoint) => readFromQueue(endpoint, endpointMapping));

@@ -30,7 +30,17 @@ exports.up = async (knex) => {
     },
     {
       id: 1,
-      chain_name: 'BTC',
+      chain_name: 'bitcoin_mainnet',
+      public_chain_identifier: '0',
+      key_algo: 'SECP256K1',
+      create_date: '2024-04-28 17:12:44.591555',
+      update_date: '2024-04-28 17:12:44.591555',
+      seed_length: 64,
+      transaction_type: 'BTC',
+    },
+    {
+      id: 2,
+      chain_name: 'bitcoin_testnet',
       public_chain_identifier: '0',
       key_algo: 'SECP256K1',
       create_date: '2024-04-28 17:12:44.591555',

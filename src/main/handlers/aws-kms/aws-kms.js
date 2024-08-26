@@ -105,7 +105,7 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const { masterSeed, masterSeedDb } = await getMasterSeed(masterKeyLabel, xPubKey);
   
   // TODO: Return without having to derive the child key if it already exists
-  // const existingChildKey = await db(childTable.TABLE_NAME).where({ derivation_path: derivationPath, master_seed_id: masterSeedDb.id }).first();
+  const existingChildKey = await db(childTable.TABLE_NAME).where({ derivation_path: derivationPath, master_seed_id: masterSeedDb.id }).first();
 
   // 3. Derive the child key
   const masterSeedUtf8Array = Buffer.from(masterSeed, 'hex');
@@ -123,16 +123,18 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
 
   logger.info('uncompressedPublicKey:', uncompressedPublicKeyHex);
   // 4. Save key to child key db
-  const childKeyDb = await db(childTable.TABLE_NAME).insert(new childTable.ChildKeys({
-    is_child: true,
-    derivation_path: derivationPath,
-    master_seed_id: masterSeedDb.id,
-    public_key: uncompressedPublicKeyHex,
-    address,
-  }));
+  if (!existingChildKey) {
+    const childKeyDb = await db(childTable.TABLE_NAME).insert(new childTable.ChildKeys({
+      is_child: true,
+      derivation_path: derivationPath,
+      master_seed_id: masterSeedDb.id,
+      public_key: uncompressedPublicKeyHex,
+      address,
+    }));
 
-  if (!childKeyDb) {
-    throw new ProcessingError('Error saving child key to database');
+    if (!childKeyDb) {
+      throw new ProcessingError('Error saving child key to database');
+    }
   }
 
   return { publicKey: uncompressedPublicKeyHex, address, accountXpub };
