@@ -178,7 +178,7 @@ function approveHash(app) {
 }
 
 function getTransactionHash(app) {
-  app.get('/gnosis/getHashAbi', (req, res) => {
+  app.post('/gnosis/getHashAbi', (req, res) => {
     const {
       to, value, data, operation, safeTxGas, baseGas, gasPrice, gasToken, refundReceiver, nonce,
     } = req.body;
