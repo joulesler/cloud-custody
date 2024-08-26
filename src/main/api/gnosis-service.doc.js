@@ -107,7 +107,7 @@ module.exports.gnosisSpec = {
       },
     },
     '/gnosis/getHashAbi': {
-      get: {
+      post: {
         tags: ['Gnosis Service'],
         summary: 'Get the ABI-encoded transaction hash',
         requestBody: {
