@@ -16,4 +16,4 @@ This project requires Node.js 20. If you don't have Node.js installed, you can d
 
 To start the application, run: `npm run dev`
 
-Visit `http://locoalhost:8080` in your browser to view the application.
+Visit `http://localhost:8080` in your browser to view the application.
