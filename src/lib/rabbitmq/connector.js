@@ -30,8 +30,12 @@ const opts = {
 
 const privateKey = process.env.PRIVATE_KEY;
 const publicKey = process.env.PUBLIC_KEY;
+const verifySign = !!(process.env.PRIVATE_KEY && process.env.PUBLIC_KEY);
 
 async function validateSignature(signature, payload) {
+  if (!verifySign) {
+    return true;
+  }
   const verifier = crypto.createVerify('sha256');
   verifier.update(Buffer.from(payload, 'utf-8'));
   const isValid = verifier.verify(publicKey, signature, 'hex');
@@ -39,6 +43,9 @@ async function validateSignature(signature, payload) {
 }
 
 async function signPayload(payload) {
+  if (!verifySign) {
+    return '';
+  }
   const signer = crypto.createSign('sha256');
   signer.update(Buffer.from(payload, 'utf-8'));
   const signature = signer.sign(privateKey, 'hex');
