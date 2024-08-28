@@ -79,7 +79,7 @@ async function sendToQueue(queueName, message, req_id = v4()) {
   const connection = await pool.acquire();
   try {
     const channel = await connection.createChannel();
-    await channel.assertQueue(queueName, { durable: false });
+    await channel.assertQueue(queueName, { durable: true });
 
     let toSign;
 
@@ -110,7 +110,7 @@ async function readFromQueue(queueName, endpointMapping) {
       endpoints[queueName] = endpointMapping;
     }
     const channel = await connection.createChannel();
-    await channel.assertQueue(queueName, { durable: false });
+    await channel.assertQueue(queueName, { durable: true });
     logger.info(` [*] Waiting for messages in ${queueName}. To exit press CTRL+C`);
     channel.consume(queueName, (msg) => {
       if (msg !== null) {
