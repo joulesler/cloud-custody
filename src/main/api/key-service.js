@@ -138,7 +138,7 @@ function generateChildKey(app) {
 
       let keyData;
 
-      if (masterKeyLabel) { keyData = await masterSeed.getKeyStoreTypeFromLabel(masterKeyLabel); }
+      if (masterKeyLabel) { keyData = await masterSeed.getKeyStoreTypeFromKeyLabel(masterKeyLabel); }
       if (xPubKey) { keyData = await masterSeed.getKeyStoreTypeFromPubKey(xPubKey); }
 
       const kmsType = keyData.key_store_type;
