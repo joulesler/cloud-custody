@@ -9,7 +9,7 @@ const { v4 } = require('uuid');
 const rabbitmqUrl = process.env.RABBITMQ_URL || 'amqp://localhost';
 const responseQueue = process.env.RESPONSE_QUEUE_NAME || 'response';
 
-// Singlelton pool instance
+// Singleton pool instance
 /**
  * @type {import('generic-pool').Pool<import('amqplib').Connection>}
  */
@@ -18,7 +18,26 @@ let pool;
 const endpoints = {};
 
 const factory = {
-  create: () => amqp.connect(rabbitmqUrl),
+  create: async () => {
+    let connection;
+    while (!connection) {
+      try {
+        connection = await amqp.connect(rabbitmqUrl, { heartbeat: 30 });
+        connection.on('error', (err) => {
+          logger.error('RabbitMQ connection error:', err);
+          pool.destroy(connection);
+        });
+        connection.on('close', () => {
+          logger.info('RabbitMQ connection closed. Attempting to reconnect...');
+          pool.destroy(connection);
+        });
+      } catch (err) {
+        logger.error('Error connecting to RabbitMQ:', err);
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+      }
+    }
+    return connection;
+  },
   destroy: (connection) => connection.close(),
 };
 
