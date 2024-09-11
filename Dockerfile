@@ -14,6 +14,7 @@ COPY ./abi /app/abi
 
 # Install any needed packages specified in package.json
 RUN npm install
+RUN npm install -g pm2 && npm install
 
 # Define build arguments
 ARG PORT=8080
@@ -53,4 +54,4 @@ ENV RABBITMQ_URL=$RABBITMQ_URL
 EXPOSE $PORT
 
 # Run the application
-CMD ["node", "src/main/main.js"]
+CMD ["pm2-runtime", "start", "src/main/main.js", "--name", "app"]
