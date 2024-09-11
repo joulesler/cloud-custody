@@ -158,9 +158,9 @@ async function readFromQueue(queueName, endpointMapping) {
             return;
           }
 
-          const { req_id } = payload;
-          let response = {};
           try {
+            const { req_id } = payload;
+            let response = {};
             // If using segregated queues, use the queue name as the endpoint (e.g. queueName = 'signHash')
             // If using single queue, use the type as the endpoint (e.g. queueName = 'request', type = 'gen_xpub')
             if (endpointMapping[queueName] || endpointMapping[type]) {
