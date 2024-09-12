@@ -57,8 +57,8 @@ migrate().then(() => {
 
 // error handler
 app.use((err, req, res) => {
-  logger.error(err);
-  if (res.headersSent || !res) {
+  logger.error(err.message);
+  if (res.headersSent || !res.status) {
     return;
   }
   res.status(500).send('Internal Server Error');

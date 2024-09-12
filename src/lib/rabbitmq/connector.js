@@ -101,7 +101,7 @@ function getPool() {
  * @param {Object} message.payload - The payload of the message.
  * @param {string} [req_id=v4()] - The request ID, defaults to a new UUID if not provided.
  */
-async function sendToQueue(queueName, message, req_id = v4()) {
+async function sendToQueue(queueName, message = {}, req_id = v4()) {
   const connection = await pool.acquire();
   try {
     const channel = await connection.createChannel();
@@ -109,6 +109,7 @@ async function sendToQueue(queueName, message, req_id = v4()) {
 
     let toSign;
 
+    message.payload = message.payload || {};
     message.payload.req_id = req_id;
     toSign = JSON.stringify(message.payload, null, 0);
 
@@ -182,7 +183,7 @@ async function readFromQueue(queueName, endpointMapping) {
             logger.error(`Error processing message: ${err}`);
             // Negative acknowledgment and requeue the message
             // If the message is requeued multiple times, it can be routed to the DLQ
-            sendToQueue(responseQueue, { error: err.message, req_id });
+            sendToQueue(responseQueue, { error: err.message }, req_id);
             channel.nack(msg, false, false); // Send to DLQ
           }
         })();
