@@ -120,7 +120,7 @@ async function sendToQueue(queueName, message = {}, req_id = v4()) {
     logger.info(` [x] Sent ${signedMessage} to ${queueName}`);
     await channel.close();
   } catch (err) {
-    logger.error(`Error sending message to queue ${queueName}:`, err);
+    logger.error(`Error sending message to queue ${queueName}: ${err}`);
   } finally {
     pool.release(connection);
   }

@@ -1,13 +1,11 @@
-FROM alpine:latest
-
-# Install Node.js
-RUN apk add --no-cache nodejs npm
+FROM node:20.10-alpine3.19
 
 # Set the working directory
 WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 COPY ./src /app/src
+COPY ./test /app/test
 COPY ./package.json /app
 COPY ./package-lock.json /app
 COPY ./abi /app/abi
@@ -33,6 +31,9 @@ ARG aws_secret_access_key
 ARG REQUEST_QUEUE_NAME="request"
 ARG RESPONSE_QUEUE_NAME="response"
 ARG RABBITMQ_URL=amqp://guest:guest@172.17.0.1:5672
+
+# USE THIS TO ENABLE REST TO MQ CONVERTER
+ENV NODE_ENV=test
 
 # Use the build arguments as environment variables
 ENV PORT=$PORT
