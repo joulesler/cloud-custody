@@ -20,22 +20,29 @@ const endpoints = {};
 const factory = {
   create: async () => {
     let connection;
-    while (!connection) {
-      try {
-        connection = await amqp.connect(rabbitmqUrl, { heartbeat: 30 });
-        connection.on('error', (err) => {
-          logger.error('RabbitMQ connection error:', err);
-          pool.destroy(connection);
-        });
-        connection.on('close', () => {
-          logger.info('RabbitMQ connection closed. Attempting to reconnect...');
-          pool.destroy(connection);
-        });
-      } catch (err) {
-        logger.error('Error connecting to RabbitMQ:', err);
-        await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+    const connect = async () => {
+      while (!connection) {
+        try {
+          connection = await amqp.connect(rabbitmqUrl, { heartbeat: 30 });
+          connection.on('error', async (err) => {
+            logger.error('RabbitMQ connection error:', err);
+            pool.destroy(connection);
+            connection = null;
+            await connect(); // Attempt to reconnect
+          });
+          connection.on('close', async () => {
+            logger.info('RabbitMQ connection closed. Attempting to reconnect...');
+            pool.destroy(connection);
+            connection = null;
+            await connect(); // Attempt to reconnect
+          });
+        } catch (err) {
+          logger.error('Error connecting to RabbitMQ:', err);
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds before retrying
+        }
       }
-    }
+    };
+    await connect();
     return connection;
   },
   destroy: (connection) => connection.close(),
@@ -157,9 +164,8 @@ async function readFromQueue(queueName, endpointMapping) {
             channel.reject(msg, false); // Reject and discard the message
             return;
           }
-
+          const req_id = payload.req_id || "NO_REQ_ID";
           try {
-            const req_id = payload.req_id || "NO_REQ_ID";
             let response = {};
             // If using segregated queues, use the queue name as the endpoint (e.g. queueName = 'signHash')
             // If using single queue, use the type as the endpoint (e.g. queueName = 'request', type = 'gen_xpub')
