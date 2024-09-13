@@ -165,7 +165,7 @@ async function readFromQueue(queueName, endpointMapping) {
             channel.reject(msg, false); // Reject and discard the message
             return;
           }
-          const req_id = payload.req_id || "NO_REQ_ID";
+          const req_id = payload?.req_id || "NO_REQ_ID";
           try {
             let response = {};
             // If using segregated queues, use the queue name as the endpoint (e.g. queueName = 'signHash')
