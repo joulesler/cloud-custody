@@ -43,6 +43,11 @@ app.get('/health', (_, res) => {
   res.json({ status: 'UP' });
 });
 
+app.get('/version', (_, res) => {
+  const { version } = require('../../package.json');
+  res.json({ version });
+});
+
 // Always run database migration prior to starting the application
 migrate().then(() => {
   logger.info('Migrations run successfully');

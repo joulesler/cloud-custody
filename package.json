@@ -1,6 +1,6 @@
 {
   "name": "cloud-custody",
-  "version": "1.0.0",
+  "version": "0.0.2-api-to-mq",
   "description": "KMS Cloudhsm development",
   "main": "./src/main/main.js",
   "scripts": {
