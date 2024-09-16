@@ -112,7 +112,7 @@ async function deriveChildKey(derivationPath, { masterKeyLabel, xPubKey }) {
   const hdkey = HDKey.fromMasterSeed(masterSeedUtf8Array);
   const childKey = hdkey.derive(derivationPath);
 
-  const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 3).join('/')).publicExtendedKey;
+  const accountXpub = hdkey.derive(derivationPath.split('/').slice(0, 4).join('/')).publicExtendedKey;
   logger.info('accountXpub:', accountXpub);
 
   logger.info('childKey.publicKey:', childKey.publicKey);
